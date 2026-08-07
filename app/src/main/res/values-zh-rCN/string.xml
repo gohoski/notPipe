@@ -61,7 +61,7 @@
         <item>内部</item>
         <item>外部</item>
     </string-array>
-    <string name="video_player_desc"><b>内置播放器</b>使用系统内置播放器直接在应用内播放视频。<b>外部播放器</b>会在单独的应用中打开视频，您可以选择自己喜欢的播放器（例如 MX Player）。<i>如果视频无法播放，请安装 MX Player 并切换到外部播放器。如果 MX Player 不可用或视频播放卡顿，请尝试使用下方的<b>转换</b>方法。</i></string>
+    <string name="video_player_desc"><b>内部播放器</b>使用系统内部播放器直接在应用内播放视频。<b>外部播放器</b>会在单独的应用中打开视频，您可以选择自己喜欢的播放器（例如 MX Player）。<i>如果视频无法播放，请安装 MX Player 并切换到外部播放器。如果 MX Player 不可用或视频播放卡顿，请尝试使用下方的<b>转换</b>方法。</i></string>
     <string name="stream_playback">流媒体播放</string>
     <string name="stream_playback_desc">如果禁用此功能，视频将在播放前下载到 SD 卡，这有时可以提高稳定性。</string>
     <string name="instance_exist">实例已存在</string>
@@ -105,7 +105,7 @@
     <string name="for_you">为你推荐</string>
     <string name="videos">视频</string>
     <string name="hq_long">处理 %sp 可能需要一些时间，请稍候。</string>
-    <string name="select_quality">选择视频质量</string>
+    <string name="select_quality">选择视频画质</string>
     <string name="general">一般</string>
     <string name="force_landscape">强制在横屏中全屏显示</string>
     <string name="latest">最新</string>
