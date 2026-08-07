@@ -1,0 +1,117 @@
+<resources>
+    <string name="thousands_suffix">K</string>
+    <string name="millions_suffix">M</string>
+    <string name="billions_suffix">B</string>
+    <string name="decimal_separator">.</string>
+    <string name="percent">%1$d%%</string> <!-- percent placement, %1$d is the number %% is the percent sign -->
+    <string name="just_now">刚刚</string>
+    <plurals name="seconds_ago">
+        <item quantity="one">%d 秒前</item>
+        <item quantity="other">%d 秒前</item>
+    </plurals>
+    <plurals name="minutes_ago">
+        <item quantity="one">%d 分前</item>
+        <item quantity="other">%d 分前</item>
+    </plurals>
+    <plurals name="hours_ago">
+        <item quantity="one">%d 时前</item>
+        <item quantity="other">%d 时前</item>
+    </plurals>
+    <plurals name="days_ago">
+        <item quantity="one">%d 天前</item>
+        <item quantity="other">%d 天前</item>
+    </plurals>
+    <plurals name="weeks_ago">
+        <item quantity="one">%d 周前</item>
+        <item quantity="other">%d 周前</item>
+    </plurals>
+    <plurals name="months_ago">
+        <item quantity="one">%d 月前</item>
+        <item quantity="other">%d 月前</item>
+    </plurals>
+    <plurals name="years_ago">
+        <item quantity="one">%d 年前</item>
+        <item quantity="other">%d 年前</item>
+    </plurals>
+    <string name="no_popular">尝试搜索以开始</string>
+    <string name="no_popular_">未找到热门视频。</string>
+    <string name="related">相关</string>
+    <string name="comments">评论</string>
+    <string name="like">点赞</string>
+    <string name="share">分享</string>
+    <string name="views">%s 次观看</string>
+    <string name="playback_via">通过 %s &gt; 播放</string>
+    <string name="settings">设置</string>
+    <string name="about">关于</string>
+    <string name="instances">实例</string>
+    <string name="playback">播放</string>
+    <string name="video_quality">视频画质</string>
+    <string name="update_instances_url">从 URL 更新实例</string>
+    <string name="update_freq">更新频率</string>
+    <string-array name="update_freq_">
+        <item>打开应用程序后</item>
+        <item>每天</item>
+        <item>每 2 天</item>
+        <item>每 3 天</item>
+    </string-array>
+    <string name="update">更新</string>
+    <string name="quality_recommend">为了获得流畅的播放体验，建议使用 360p。</string>
+    <string name="video_player">视频播放器</string>
+    <string-array name="video_player_">
+        <item>内部</item>
+        <item>外部</item>
+    </string-array>
+    <string name="video_player_desc"><b>内置播放器</b>使用系统内置播放器直接在应用内播放视频。<b>外部播放器</b>会在单独的应用中打开视频，您可以选择自己喜欢的播放器（例如 MX Player）。<i>如果视频无法播放，请安装 MX Player 并切换到外部播放器。如果 MX Player 不可用或视频播放卡顿，请尝试使用下方的<b>转换</b>方法。</i></string>
+    <string name="stream_playback">流媒体播放</string>
+    <string name="stream_playback_desc">如果禁用此功能，视频将在播放前下载到 SD 卡，这有时可以提高稳定性。</string>
+    <string name="instance_exist">实例已存在</string>
+    <string name="incorrect_url">请输入正确的 URL</string>
+    <string name="url">输入 URL</string>
+    <string name="updating_instances">更新实例</string>
+    <string name="conversion">转换</string>
+    <string name="conversion_">如果您的设备不支持 H.264 且 MX Player 运行缓慢或无法使用，转换功能可能有所帮助。转换功能仅适用于 YtAPILegacy 实例，并且会优先尝试转换。需要 SD 卡。<b>如果视频播放正常，请勿启用此功能。</b></string>
+    <string name="convert_videos">转换视频</string>
+    <string name="video_codec">视频编解码器</string>
+    <string name="setting_footer">FTube — 基于 notPipe 的 YouTube 客户端\n▶ github.com/gohoski/notPipe\n▶ t.me/AppDataApps</string>
+    <string name="loading">加载中</string>
+    <string name="about_">一款适用于旧版安卓系统的 YouTube 客户端。倾注心血，力求长久耐用。.\n▶ github.com/gohoski/notPipe\n▶ t.me/AppDataApps\n\n本作品采用 WTFPL 许可协议。详情请访问 www.wtfpl.net。\n本项目中使用的 NNJSON 库采用下面提供的 MIT 许可证授权。</string>
+    <string name="dead_instance">无效实例 %s，正在切换</string>
+    <string name="try_again">再试一次</string>
+    <string name="select_ins">选择实例</string>
+    <string name="desc">描述</string>
+    <string name="loading_">(loading)</string>
+    <string name="conv_long">转换可能需要一些时间，请稍候。</string>
+    <string name="cache">cache</string>
+    <string name="sd_card">要继续，请插入 SD 卡</string>
+    <string name="ins_upd">实例已成功更新</string>
+    <string name="subscribers">%s 订阅者</string>
+    <string name="video_count">找到的视频数量: %d</string>
+    <string name="full_screen">全屏</string>
+    <string name="download">下载</string>
+    <string name="channel">频道</string>
+    <string name="no_quality">所选画质不可用，正在尝试 360p</string>
+    <string name="content_unavailable">此内容不可用</string>
+    <string name="metadata_fail">视频详情加载失败，请重试。</string>
+    <string name="async_uri">异步播放器初始化</string>
+    <string name="async_uri_">这或许可以解决部分运行 Android 4.0–4.3 系统的设备上出现的卡顿问题。如果应用在播放开始前卡顿几秒钟，请启用此选项。</string>
+    <string name="sd_card_space">SD 卡空间不足。</string>
+    <string name="unsupported_format">您的设备不支持此格式。请尝试更改视频画质或播放器。</string>
+    <string name="confirm_exit">点击返回按钮再次退出</string>
+    <string name="no_videos"未找到视频</string>
+    <string name="no_comments">未找到评论</string>
+    <string name="no_related">未找到相关视频</string>
+    <string name="experimental_1080">1080p 为实验性功能；为保证稳定性，请使用 720p</string>
+    <string name="long_360">视频时长超过一小时，切换到 360p</string>
+    <string name="for_you">为你推荐</string>
+    <string name="videos">视频</string>
+    <string name="hq_long">处理 %sp 可能需要一些时间，请稍候。</string>
+    <string name="select_quality">选择视频质量</string>
+    <string name="general">一般</string>
+    <string name="force_landscape">强制在横屏中全屏显示</string>
+    <string name="latest">最新</string>
+    <string name="popular">热门</string>
+    <string name="download_speed">%d KB/s</string>
+    <string name="download_progress_percent">%1$d%% (%2$d KB/s)</string>
+    <string name="download_progress_mb">%1$.1f MB (%2$d KB/s)</string>
+</resources>
+
