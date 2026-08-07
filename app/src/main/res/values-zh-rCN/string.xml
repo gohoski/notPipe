@@ -97,7 +97,7 @@
     <string name="sd_card_space">SD 卡空间不足。</string>
     <string name="unsupported_format">您的设备不支持此格式。请尝试更改视频画质或播放器。</string>
     <string name="confirm_exit">点击返回按钮再次退出</string>
-    <string name="no_videos"未找到视频</string>
+    <string name="no_videos">未找到视频</string>
     <string name="no_comments">未找到评论</string>
     <string name="no_related">未找到相关视频</string>
     <string name="experimental_1080">1080p 为实验性功能；为保证稳定性，请使用 720p</string>
