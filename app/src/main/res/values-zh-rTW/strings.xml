@@ -1,0 +1,116 @@
+<resources>
+    <string name="thousands_suffix">K</string>
+    <string name="millions_suffix">M</string>
+    <string name="billions_suffix">B</string>
+    <string name="decimal_separator">.</string>
+    <string name="percent">%1$d%%</string> <!-- percent placement, %1$d is the number %% is the percent sign -->
+    <string name="just_now">剛剛</string>
+    <plurals name="seconds_ago">
+        <item quantity="one">%d 秒前</item>
+        <item quantity="other">%d 秒前</item>
+    </plurals>
+    <plurals name="minutes_ago">
+        <item quantity="one">%d 分前</item>
+        <item quantity="other">%d 分前</item>
+    </plurals>
+    <plurals name="hours_ago">
+        <item quantity="one">%d 時前</item>
+        <item quantity="other">%d 時前</item>
+    </plurals>
+    <plurals name="days_ago">
+        <item quantity="one">%d 天前</item>
+        <item quantity="other">%d 天前</item>
+    </plurals>
+    <plurals name="weeks_ago">
+        <item quantity="one">%d 週前</item>
+        <item quantity="other">%d 周前</item>
+    </plurals>
+    <plurals name="months_ago">
+        <item quantity="one">%d 月前</item>
+        <item quantity="other">%d 月前</item>
+    </plurals>
+    <plurals name="years_ago">
+        <item quantity="one">%d 年前</item>
+        <item quantity="other">%d 年前</item>
+    </plurals>
+    <string name="no_popular">試試搜尋以開始</string>
+    <string name="no_popular_">沒有找到熱門影片。</string>
+    <string name="related">相關</string>
+    <string name="comments">留言</string>
+    <string name="like">按讚</string>
+    <string name="share">分享</string>
+    <string name="views">%s 次觀看</string>
+    <string name="playback_via">透過 %s &gt; 播放</string>
+    <string name="settings">設定</string>
+    <string name="about">關於</string>
+    <string name="instances">實例</string>
+    <string name="playback">播放</string>
+    <string name="video_quality">影片品質</string>
+    <string name="update_instances_url">从 URL 更新實例</string>
+    <string name="update_freq">更新頻率</string>
+    <string-array name="update_freq_">
+        <item>打開應用程式後</item>
+        <item>每天</item>
+        <item>每 2 天</item>
+        <item>每 3 天</item>
+    </string-array>
+    <string name="update">更新</string>
+    <string name="quality_recommend">為了獲得流暢的播放體驗，建議使用 360p。</string>
+    <string name="video_player">影片播放器</string>
+    <string-array name="video_player_">
+        <item>內部</item>
+        <item>外部</item>
+    </string-array>
+    <string name="video_player_desc"><b>內部播放器</b>使用系統內建播放器直接在應用程式內播放影片。<b>外部播放器</b>會在單獨的應用程式中開啟影片，您可以選擇自己喜歡的播放器（例如 MX Player）。<i>如果影片無法播放，請安裝 MX Player 並切換到外部播放器。如果 MX Player 不可用或影片播放卡頓，請嘗試使用下方的<b>轉換</b>方法。</i></string>
+    <string name="stream_playback">串流媒體播放</string>
+    <string name="stream_playback_desc">如果停用此功能，影片將在播放前下載到 SD 卡，有時可以提高穩定性。</string>
+    <string name="instance_exist">實例已存在</string>
+    <string name="incorrect_url">請輸入正確的 URL</string>
+    <string name="url">輸入 URL</string>
+    <string name="updating_instances">更新實例</string>
+    <string name="conversion">轉換</string>
+    <string name="conversion_">如果您的裝置不支援 H.264 且 MX Player 運作緩慢或無法使用，轉換功能可能會有所幫助。轉換功能僅適用於 YtAPILegacy 實例，並且會優先嘗試轉換。需要 SD 卡。<b>如果影片播放正常，請勿啟用此功能。</b></string>
+    <string name="convert_videos">轉換影片</string>
+    <string name="video_codec">影片編解碼器</string>
+    <string name="setting_footer">FTube — 基於 notPipe 的 YouTube 用戶端\n▶ github.com/gohoski/notPipe\n▶ t.me/AppDataApps</string>
+    <string name="loading">載入中</string>
+    <string name="about_">一款適用於舊版安卓系統的 YouTube 用戶端。傾注心血，力求長久耐用。\n▶ github.com/gohoski/notPipe\n▶ t.me/AppDataApps\n\n本作品採用 WTFPL 授權協議。詳情請造訪 www.wtfpl.net。\n本專案中使用的 NNJSON 庫採用下面提供的 MIT 許可證授權。</string>
+    <string name="dead_instance">無效實例 %s，正在切換</string>
+    <string name="try_again">再試一次</string>
+    <string name="select_ins">選擇實例</string>
+    <string name="desc">說明</string>
+    <string name="loading_">(loading)</string>
+    <string name="conv_long">轉換可能需要一些時間，請稍候。</string>
+    <string name="cache">cache</string>
+    <string name="sd_card">若要繼續，請插入 SD 卡</string>
+    <string name="ins_upd">實例已成功更新</string>
+    <string name="subscribers">%s 訂閱者</string>
+    <string name="video_count">找到的影片數量: %d</string>
+    <string name="full_screen">全螢幕</string>
+    <string name="download">下載</string>
+    <string name="channel">頻道</string>
+    <string name="no_quality">所選畫質不可用，正在嘗試 360p</string>
+    <string name="content_unavailable">此內容不可用</string>
+    <string name="metadata_fail">影片詳情載入失敗，請重試。</string>
+    <string name="async_uri">非同步播放器初始化</string>
+    <string name="async_uri_">這或許可以解決部分運行 Android 4.0–4.3 系統的裝置上出現的卡頓問題。如果應用程式在播放開始前卡頓幾秒鐘，請啟用此選項。</string>
+    <string name="sd_card_space">SD 卡空間不足。</string>
+    <string name="unsupported_format">您的裝置不支援此格式。請嘗試變更影片畫質或播放器。</string>
+    <string name="confirm_exit">點選「返回」按鈕再次退出</string>
+    <string name="no_videos">未找到影片</string>
+    <string name="no_comments">未找到留言</string>
+    <string name="no_related">未找到相關影片</string>
+    <string name="experimental_1080">1080p 為實驗性功能；確保穩定性，請使用 720p</string>
+    <string name="long_360">影片長度超過一小時，切換到 360p</string>
+    <string name="for_you">為你推薦</string>
+    <string name="videos">影片</string>
+    <string name="hq_long">處理 %sp 可能需要一些時間，請稍候。</string>
+    <string name="select_quality">選擇影片品質</string>
+    <string name="general">一般</string>
+    <string name="force_landscape">強制在橫向螢幕中全螢幕顯示</string>
+    <string name="latest">最新</string>
+    <string name="popular">熱門</string>
+    <string name="download_speed">%d KB/s</string>
+    <string name="download_progress_percent">%1$d%% (%2$d KB/s)</string>
+    <string name="download_progress_mb">%1$.1f MB (%2$d KB/s)</string>
+</resources>
