@@ -74,7 +74,7 @@
     <string name="video_codec">视频编解码器</string>
     <string name="setting_footer">FTube — 基于 notPipe 的 YouTube 客户端\n▶ github.com/gohoski/notPipe\n▶ t.me/AppDataApps</string>
     <string name="loading">加载中</string>
-    <string name="about_">一款适用于旧版安卓系统的 YouTube 客户端。倾注心血，力求长久耐用。.\n▶ github.com/gohoski/notPipe\n▶ t.me/AppDataApps\n\n本作品采用 WTFPL 许可协议。详情请访问 www.wtfpl.net。\n本项目中使用的 NNJSON 库采用下面提供的 MIT 许可证授权。</string>
+    <string name="about_">一款适用于旧版安卓系统的 YouTube 客户端。倾注心血，力求长久耐用。\n▶ github.com/gohoski/notPipe\n▶ t.me/AppDataApps\n\n本作品采用 WTFPL 许可协议。详情请访问 www.wtfpl.net。\n本项目中使用的 NNJSON 库采用下面提供的 MIT 许可证授权。</string>
     <string name="dead_instance">无效实例 %s，正在切换</string>
     <string name="try_again">再试一次</string>
     <string name="select_ins">选择实例</string>
