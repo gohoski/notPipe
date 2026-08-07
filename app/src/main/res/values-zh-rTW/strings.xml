@@ -23,7 +23,7 @@
     </plurals>
     <plurals name="weeks_ago">
         <item quantity="one">%d 週前</item>
-        <item quantity="other">%d 周前</item>
+        <item quantity="other">%d 週前</item>
     </plurals>
     <plurals name="months_ago">
         <item quantity="one">%d 月前</item>
