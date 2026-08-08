@@ -72,7 +72,7 @@
     <string name="conversion_">如果您的裝置不支援 H.264 且 MX Player 運作緩慢或無法使用，轉換功能可能會有所幫助。轉換功能僅適用於 YtAPILegacy 實例，並且會優先嘗試轉換。需要 SD 卡。<b>如果影片播放正常，請勿啟用此功能。</b></string>
     <string name="convert_videos">轉換影片</string>
     <string name="video_codec">影片編解碼器</string>
-    <string name="setting_footer">FTube — 基於 notPipe 的 YouTube 用戶端\n▶ github.com/gohoski/notPipe\n▶ t.me/AppDataApps</string>
+    <string name="setting_footer">notPipe - 用於舊式 Android 裝置的 YouTube 用戶端\n▶ github.com/gohoski/notPipe\n▶ t.me/AppDataApps</string>
     <string name="loading">載入中</string>
     <string name="about_">一款適用於舊版安卓系統的 YouTube 用戶端。傾注心血，力求長久耐用。\n▶ github.com/gohoski/notPipe\n▶ t.me/AppDataApps\n\n本作品採用 WTFPL 授權協議。詳情請造訪 www.wtfpl.net。\n本專案中使用的 NNJSON 庫採用下面提供的 MIT 許可證授權。</string>
     <string name="dead_instance">無效實例 %s，正在切換</string>
