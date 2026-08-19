@@ -1,0 +1,116 @@
+<resources>
+    <string name="thousands_suffix">K</string>
+    <string name="millions_suffix">M</string>
+    <string name="billions_suffix">B</string>
+    <string name="decimal_separator">,</string>
+    <string name="percent">%1$d%%</string> <!-- ubicación del porcentaje, %1$d es el número y %% es el símbolo de porcentaje -->
+    <string name="just_now">Ahora mismo</string>
+    <plurals name="seconds_ago">
+        <item quantity="one">Hace %d segundo</item>
+        <item quantity="other">Hace %d segundos</item>
+    </plurals>
+    <plurals name="minutes_ago">
+        <item quantity="one">Hace %d minuto</item>
+        <item quantity="other">Hace %d minutos</item>
+    </plurals>
+    <plurals name="hours_ago">
+        <item quantity="one">Hace %d hora</item>
+        <item quantity="other">Hace %d horas</item>
+    </plurals>
+    <plurals name="days_ago">
+        <item quantity="one">Hace %d día</item>
+        <item quantity="other">Hace %d días</item>
+    </plurals>
+    <plurals name="weeks_ago">
+        <item quantity="one">Hace %d semana</item>
+        <item quantity="other">Hace %d semanas</item>
+    </plurals>
+    <plurals name="months_ago">
+        <item quantity="one">Hace %d mes</item>
+        <item quantity="other">Hace %d meses</item>
+    </plurals>
+    <plurals name="years_ago">
+        <item quantity="one">Hace %d año</item>
+        <item quantity="other">Hace %d años</item>
+    </plurals>
+    <string name="no_popular">Prueba a buscar para comenzar</string>
+    <string name="no_popular_">No se encontraron videos populares.</string>
+    <string name="related">Relacionados</string>
+    <string name="comments">Comentarios</string>
+    <string name="like">Me gusta</string>
+    <string name="share">Compartir</string>
+    <string name="views">%s reproducciones</string>
+    <string name="playback_via">Reproducción mediante %s &gt;</string>
+    <string name="settings">Ajustes</string>
+    <string name="about">Acerca de</string>
+    <string name="instances">Instancias</string>
+    <string name="playback">Reproducción</string>
+    <string name="video_quality">Calidad de video</string>
+    <string name="update_instances_url">Actualizar instancias desde URL</string>
+    <string name="update_freq">Frecuencia de actualización</string>
+    <string-array name="update_freq_">
+        <item>Al abrir la aplicación</item>
+        <item>Diariamente</item>
+        <item>Cada 2 días</item>
+        <item>Cada 3 días</item>
+    </string-array>
+    <string name="update">Actualizar</string>
+    <string name="quality_recommend">Para una reproducción fluida, se recomienda 360p.</string>
+    <string name="video_player">Reproductor de video</string>
+    <string-array name="video_player_">
+        <item>Interno</item>
+        <item>Externo</item>
+    </string-array>
+    <string name="video_player_desc">El <b>reproductor interno</b> reproduce videos directamente dentro de la aplicación usando el reproductor integrado del sistema. El <b>reproductor externo</b> abre el video en una aplicación independiente, permitiéndote elegir tu reproductor preferido (p. ej., MX Player). <i>Si los videos no se reproducen, instala MX Player y cambia al reproductor externo. Si MX Player no está disponible o los videos van lentos, prueba a usar la <b>conversión</b> a continuación.</i></string>
+    <string name="stream_playback">Reproducción en transmisión</string>
+    <string name="stream_playback_desc">Si se desactiva, los videos se descargarán en la tarjeta SD antes de la reproducción, lo que a veces puede mejorar la estabilidad.</string>
+    <string name="instance_exist">La instancia ya existe</string>
+    <string name="incorrect_url">Por favor, introduce una URL correcta</string>
+    <string name="url">Introducir URL</string>
+    <string name="updating_instances">Actualizando instancias</string>
+    <string name="conversion">Conversión</string>
+    <string name="conversion_">La conversión puede ayudar si tu dispositivo no admite H.264 y MX Player es lento o no está disponible. La conversión solo está disponible para instancias YtAPILegacy y se intenta primero. Se requiere tarjeta SD. Con la conversión activa, no intentes ver videos largos. <b>No la actives si los videos se reproducen con normalidad.</b></string>
+    <string name="convert_videos">Convertir videos</string>
+    <string name="video_codec">Códec de video</string>
+    <string name="setting_footer">notPipe — Cliente de YouTube para Android antiguo\n▶ github.com/gohoski/notPipe\n▶ t.me/AppDataApps</string>
+    <string name="loading">Cargando</string>
+    <string name="about_">Un cliente de YouTube funcional para versiones antiguas de Android. Hecho con ♡ y pensado para durar.\n▶ github.com/gohoski/notPipe\n▶ t.me/AppDataApps\n\nBajo licencia WTFPL. Visita www.wtfpl.net para más detalles.\nLa biblioteca NNJSON utilizada en este proyecto está bajo la Licencia MIT incluida a continuación.</string>
+    <string name="dead_instance">Instancia Inactiva %s, cambiando</string>
+    <string name="try_again">Reintentar</string>
+    <string name="select_ins">Seleccionar instancia</string>
+    <string name="desc">Descripción</string>
+    <string name="loading_">(cargando)</string>
+    <string name="conv_long">La conversión puede tardar un momento. Por favor, espera.</string>
+    <string name="cache">Caché</string>
+    <string name="sd_card">Para continuar, inserta una tarjeta SD</string>
+    <string name="ins_upd">Instancias actualizadas con éxito</string>
+    <string name="subscribers">%s suscriptores</string>
+    <string name="video_count">Número de videos encontrados: %d</string>
+    <string name="full_screen">Pantalla completa</string>
+    <string name="download">Descargar</string>
+    <string name="channel">Canal</string>
+    <string name="no_quality">La calidad seleccionada no está disponible, intentando con 360p</string>
+    <string name="content_unavailable">Este contenido no está disponible</string>
+    <string name="metadata_fail">Error al cargar los detalles del video, inténtalo de nuevo</string>
+    <string name="async_uri">Inicialización asíncrona del reproductor</string>
+    <string name="async_uri_">Esto puede resolver problemas de congelamiento en algunos dispositivos con Android 4.0–4.3. Activa esta opción si la aplicación se congela durante unos segundos antes de iniciar la reproducción.</string>
+    <string name="sd_card_space">No hay suficiente espacio libre en la tarjeta SD</string>
+    <string name="unsupported_format">Este formato no es compatible con tu dispositivo. Intenta cambiar la calidad o el reproductor.</string>
+    <string name="confirm_exit">Pulsa Atrás de nuevo para salir</string>
+    <string name="no_videos">No se encontraron videos</string>
+    <string name="no_comments">No se encontraron comentarios</string>
+    <string name="no_related">No se encontraron videos relacionados</string>
+    <string name="experimental_1080">La resolución 1080p es experimental; utiliza 720p para mayor estabilidad</string>
+    <string name="long_360">El video dura más de una hora, cambiando a 360p</string>
+    <string name="for_you">Para ti</string>
+    <string name="videos">Videos</string>
+    <string name="hq_long">Procesar %sp puede tardar un momento. Por favor, espera.</string>
+    <string name="select_quality">Seleccionar calidad de video</string>
+    <string name="general">General</string>
+    <string name="force_landscape">Forzar modo horizontal en pantalla completa</string>
+    <string name="latest">Últimos</string>
+    <string name="popular">Populares</string>
+    <string name="download_speed">%d KB/s</string>
+    <string name="download_progress_percent">%1$d%% (%2$d KB/s)</string>
+    <string name="download_progress_mb">%1$.1f MB (%2$d KB/s)</string>
+</resources>

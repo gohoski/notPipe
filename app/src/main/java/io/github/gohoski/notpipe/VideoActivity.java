@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.WindowManager;
+import android.view.KeyEvent;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -36,6 +37,7 @@ import android.widget.TabWidget;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
+import android.widget.PopupMenu;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,6 +77,7 @@ public class VideoActivity extends Activity {
     ProgressBar relatedLoading, commentsLoading;
     ScrollView scrollView;
     View tabsScrollView;
+    private PopupMenu tvMenu;
 
     Video video;
     List<VideoInfo> relatedVideos = new ArrayList<VideoInfo>();
@@ -205,6 +208,33 @@ public class VideoActivity extends Activity {
             loadVideoTask = new LoadVideoTask();
             loadVideoTask.execute(videoId);
         }
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event){
+        // TV Fallback: Force opening the overflow menu via key event because DPAD navigation gets stuck on UI views.
+        if(event != null && event.getAction() == KeyEvent.ACTION_DOWN){
+            int key = event.getKeyCode();
+            if(key == KeyEvent.KEYCODE_INFO || key == KeyEvent.KEYCODE_MENU){
+                showTvMenu();
+                return true;
+            }
+        }
+        return super.dispatchKeyEvent(event);
+    }
+    private void showTvMenu() {
+        View anchorView = getWindow().getDecorView();
+        if (tvMenu == null) {
+            tvMenu = new PopupMenu(this, anchorView);
+            tvMenu.getMenuInflater().inflate(R.menu.menu_main, tvMenu.getMenu());
+            tvMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    return onOptionsItemSelected(item);
+                }
+            });
+        }
+        tvMenu.show();
     }
 
     private void handleVideoClick(int position) {
@@ -827,8 +857,8 @@ public class VideoActivity extends Activity {
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, android.view.KeyEvent event) {
-        if (keyCode == android.view.KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
             if (isFullscreenMode) {
                 if (isTablet()) {
                     exitFullscreenMode();

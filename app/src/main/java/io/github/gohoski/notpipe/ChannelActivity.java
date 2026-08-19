@@ -10,6 +10,7 @@ import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.KeyEvent;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -23,6 +24,7 @@ import android.widget.TabHost;
 import android.widget.TabWidget;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.PopupMenu;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -47,6 +49,7 @@ public class ChannelActivity extends Activity {
     String channelId;
     Channel channel;
     LinearLayout channelLayout;
+    private PopupMenu tvMenu;
     Context context;
     ImageView banner;
     boolean isDestroyedFlag = false;
@@ -194,6 +197,33 @@ public class ChannelActivity extends Activity {
                 }
             }
         }
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event){
+        // TV Fallback: Force opening the overflow menu via key event because DPAD navigation gets stuck on UI views.
+        if(event != null && event.getAction() == KeyEvent.ACTION_DOWN){
+            int key = event.getKeyCode();
+            if(key == KeyEvent.KEYCODE_INFO || key == KeyEvent.KEYCODE_MENU){
+                showTvMenu();
+                return true;
+            }
+        }
+        return super.dispatchKeyEvent(event);
+    }
+    private void showTvMenu() {
+        View anchorView = getWindow().getDecorView();
+        if (tvMenu == null) {
+            tvMenu = new PopupMenu(this, anchorView);
+            tvMenu.getMenuInflater().inflate(R.menu.menu_main, tvMenu.getMenu());
+            tvMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    return onOptionsItemSelected(item);
+                }
+            });
+        }
+        tvMenu.show();
     }
 
     private void displayVideos(final List<VideoInfo> fetchedVideos) {
