@@ -49,5 +49,8 @@
         </activity>
         <activity android:name=".ChannelActivity"
             android:label="@string/channel" />
+        <activity android:name=".LoginActivity"
+            android:label="@string/login"
+            android:configChanges="keyboardHidden|orientation" />
     </application>
 </manifest>

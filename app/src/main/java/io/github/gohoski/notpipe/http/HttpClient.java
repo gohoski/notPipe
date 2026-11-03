@@ -21,9 +21,9 @@ import io.github.gohoski.notpipe.Utils;
  */
 public class HttpClient {
     public static final String USER_AGENT = "notPipe/" + BuildConfig.VERSION_NAME + " (https://github.com/gohoski/notPipe)";
-    private static final int TIMEOUT = 20000;
+    private static final int TIMEOUT = 15000;
     public static final int VIDEO_TIMEOUT = 60000;
-    public static final int CONVERSION_TIMEOUT = 300000;
+    public static final int CONVERSION_TIMEOUT = 90000;
 
     public interface DownloadProgressListener {
         /**
@@ -33,7 +33,6 @@ public class HttpClient {
         boolean onProgress(long bytesDownloaded, long totalBytes);
     }
 
-    @SuppressWarnings("ConstantConditions") // A notice about inputStream being null appears on Android Studio
     public static InputStream execute(HttpRequest request) throws IOException {
         return execute(request, TIMEOUT);
     }
@@ -45,24 +44,29 @@ public class HttpClient {
      * @return InputStream with the response
      * @throws IOException If there's an error executing the request
      */
-    @SuppressWarnings("ConstantConditions")
     public static InputStream execute(HttpRequest request, int timeout) throws IOException {
+        return execute(request, timeout, 0);
+    }
+
+    private static InputStream execute(HttpRequest request, int timeout, int retryCount) throws IOException {
         Utils.waitForConnection(NotPipe.getAppContext());
         HttpURLConnection connection = null;
         try {
             URL url = new URL(request.getBaseUrl() + request.getEndpoint());
             Log.d("HttpClient", url.toString());
-            String urlStr = url.toString().toLowerCase();
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod(request.getMethod());
-            connection.setConnectTimeout(9999);
+            connection.setConnectTimeout(10000);
             connection.setReadTimeout(timeout);
 
             connection.setRequestProperty("User-Agent", USER_AGENT);
+
+            // Apply all custom headers from HttpRequest
             for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
                 connection.setRequestProperty(entry.getKey(), entry.getValue());
             }
 
+            // Write POST/PUT body if present
             if (request.getBody() != null && request.getBody().length() > 0) {
                 connection.setDoOutput(true);
                 if (!request.getHeaders().containsKey("Content-Type"))
@@ -71,19 +75,35 @@ public class HttpClient {
                 connection.setFixedLengthStreamingMode(postData.length);
                 OutputStream os = connection.getOutputStream();
                 os.write(postData);
-                os.flush(); os.close();
-            }/* else if ("POST".equals(request.getMethod())) {
-                connection.setDoOutput(true);
-                connection.setFixedLengthStreamingMode(0);
-            }*/
+                os.flush();
+                os.close();
+            }
 
-            int status = connection.getResponseCode();
-            if (status >= 200 && status < 300) {
-                String contentType = connection.getContentType();
-                if (urlStr.contains("&codec=") && contentType != null && contentType.startsWith("application/json")) {
+            int status;
+            try {
+                status = connection.getResponseCode();
+            } catch (IOException e) {
+                String msg = e.getMessage();
+                if (msg != null && msg.toLowerCase().contains("authentication challenge")) {
+                    String errorBody = null;
+                    try { errorBody = streamToString(connection.getErrorStream()); } catch (Exception ignored) {}
                     connection.disconnect();
-                    throw new VideoTooLongException("Video is too long!");
+                    throw new HttpException(401, "HTTP 401 " + url + " (authentication challenge is null)", errorBody);
                 }
+                throw e;
+            }
+
+            // If the socket was dropped by the server or connection pool, retry once with full request data
+            if (status == -1) {
+                connection.disconnect();
+                if (retryCount < 1) {
+                    Log.w("HttpClient", "Received HTTP -1 (stale connection), retrying request: " + url);
+                    return execute(request, timeout, retryCount + 1);
+                }
+                throw new HttpException(-1, "HTTP -1 (Connection dropped or invalid response) " + url, null);
+            }
+
+            if (status >= 200 && status < 300) {
                 return new ConnectionInputStream(connection.getInputStream(), connection);
             } else {
                 InputStream errorStream = connection.getErrorStream();
@@ -177,7 +197,16 @@ public class HttpClient {
             connection.setReadTimeout(timeout);
             connection.setRequestProperty("User-Agent", USER_AGENT);
             connection.setInstanceFollowRedirects(false);
-            int status = connection.getResponseCode();
+            int status;
+            try {
+                status = connection.getResponseCode();
+            } catch (IOException e) {
+                String msg = e.getMessage();
+                if (msg != null && msg.toLowerCase().indexOf("authentication challenge") != -1) {
+                    throw new HttpException(401, "HTTP 401 " + url + " (authentication challenge is null)", null);
+                }
+                throw e;
+            }
             if (status == 404) {
                 throw new FileNotFoundException("Video quality not available (HTTP 404)");
             }
@@ -246,12 +275,15 @@ public class HttpClient {
     public static void downloadToFile(String urlString, String outputPath, int timeout, DownloadProgressListener listener) throws IOException {
         HttpRequest request = new HttpRequest(urlString, "");
         InputStream in = null;
+        java.io.BufferedInputStream bin = null;
         java.io.FileOutputStream out = null;
         java.io.File file = new java.io.File(outputPath);
         boolean success = false;
+        // 32 KB buffer matches standard FAT32 cluster sizes on SD cards, reducing I/O context switches
+        final int BUFFER_SIZE = 32768;
         try {
             in = execute(request, timeout);
-            // Get content length if available (may be -1 for chunked transfers)
+            bin = new java.io.BufferedInputStream(in, BUFFER_SIZE);
             long totalBytes = -1;
             if (in instanceof ConnectionInputStream) {
                 totalBytes = ((ConnectionInputStream) in).getContentLength();
@@ -261,10 +293,10 @@ public class HttpClient {
                 parent.mkdirs();
             }
             out = new java.io.FileOutputStream(file);
-            byte[] buffer = new byte[8192];
+            byte[] buffer = new byte[BUFFER_SIZE];
             int bytesRead;
             long bytesDownloaded = 0;
-            while ((bytesRead = in.read(buffer)) != -1) {
+            while ((bytesRead = bin.read(buffer, 0, BUFFER_SIZE)) != -1) {
                 out.write(buffer, 0, bytesRead);
                 bytesDownloaded += bytesRead;
                 if (listener != null) {
@@ -274,13 +306,24 @@ public class HttpClient {
                 }
             }
             out.flush();
+            // Sync file descriptors to ensure data is committed to SD card before returning
+            try {
+                out.getFD().sync();
+            } catch (Exception ignored) {}
+
             success = true;
         } finally {
-            if (in != null)
+            if (bin != null) {
+                try { bin.close(); } catch (IOException ignored) {}
+            } else if (in != null) {
                 try { in.close(); } catch (IOException ignored) {}
-            if (out != null)
+            }
+            if (out != null) {
                 try { out.close(); } catch (IOException ignored) {}
-            if (!success && file.exists()) file.delete();
+            }
+            if (!success && file.exists()) {
+                file.delete();
+            }
         }
     }
 }

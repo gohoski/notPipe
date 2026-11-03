@@ -14,18 +14,36 @@ import java.util.List;
 import io.github.gohoski.notpipe.R;
 import io.github.gohoski.notpipe.Utils;
 import io.github.gohoski.notpipe.data.Comment;
+import io.github.gohoski.notpipe.util.ChannelIconResolver;
 import io.github.gohoski.notpipe.util.ImageLoader;
 
 /**
  * Adapter for comments with lazy loading support.
  * Only loads images for items that have been explicitly marked as visible.
  */
-public class CommentAdapter extends ArrayAdapter<Comment> {
+public class CommentAdapter extends ArrayAdapter<Comment> implements ChannelIconRefreshable {
     private Context context;
+    private ChannelIconResolver.OnIconResolvedListener iconResolveListener;
+    private OnChannelClickListener channelClickListener;
 
     public CommentAdapter(Context context, int resource, List<Comment> objects) {
         super(context, resource, objects);
         this.context = context;
+    }
+
+    public void setChannelIconResolveListener(ChannelIconResolver.OnIconResolvedListener listener) {
+        this.iconResolveListener = listener;
+    }
+
+    public void setOnChannelClickListener(OnChannelClickListener listener) {
+        this.channelClickListener = listener;
+    }
+
+    /**
+     * Called when the user clicks the comment author's name or avatar.
+     */
+    public interface OnChannelClickListener {
+        void onChannelClick(String channelId);
     }
 
     @Override
@@ -39,8 +57,8 @@ public class CommentAdapter extends ArrayAdapter<Comment> {
             holder = new ViewHolder();
             holder.channelTitle = (TextView) row.findViewById(R.id.channel_title);
             holder.content = (TextView) row.findViewById(R.id.content);
-            holder.date = (TextView) row.findViewById(R.id.date);
             holder.channelThumb = (ImageView) row.findViewById(R.id.channel_thumbnail);
+            holder.date = (TextView) row.findViewById(R.id.date);
             row.setTag(holder);
         } else {
             holder = (ViewHolder) row.getTag();
@@ -56,7 +74,20 @@ public class CommentAdapter extends ArrayAdapter<Comment> {
         holder.imagesLoaded = false;
 
         // Reset thumbnail to prevent recycled view artifacts
+        ImageLoader.cancelLoad(holder.channelThumb);
         holder.channelThumb.setImageBitmap(null);
+
+        final String commentChannelId = comment.channelId;
+        View.OnClickListener channelClick = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (channelClickListener != null && commentChannelId != null && commentChannelId.length() > 0) {
+                    channelClickListener.onChannelClick(commentChannelId);
+                }
+            }
+        };
+        holder.channelTitle.setOnClickListener(channelClick);
+        holder.channelThumb.setOnClickListener(channelClick);
 
         return row;
     }
@@ -68,8 +99,47 @@ public class CommentAdapter extends ArrayAdapter<Comment> {
         if (row.getTag() instanceof ViewHolder) {
             ViewHolder holder = (ViewHolder) row.getTag();
             if (!holder.imagesLoaded && holder.comment != null) {
-                ImageLoader.loadImage(holder.comment.channelThumbnail, holder.channelThumb);
+                loadChannelIcon(holder);
                 holder.imagesLoaded = true;
+            }
+        }
+    }
+
+    /**
+     * Specifically re-checks and loads the channel icon for a given row.
+     * This is called by VideoActivity when a fallback URL has been successfully resolved.
+     */
+    @Override
+    public void updateChannelIconForView(View row, String resolvedChannelId) {
+        if (row != null && row.getTag() instanceof ViewHolder) {
+            ViewHolder holder = (ViewHolder) row.getTag();
+            if (holder.comment != null && holder.imagesLoaded && resolvedChannelId.equals(holder.comment.channelId)) {
+                loadChannelIcon(holder);
+            }
+        }
+    }
+
+    /**
+     * Loads the channel icon through the shared resolver, which handles
+     * resolved URLs and background fallback fetching automatically.
+     */
+    private void loadChannelIcon(ViewHolder holder) {
+        if (holder.channelThumb == null || holder.comment == null) return;
+        ChannelIconResolver.loadInto(holder.channelThumb, holder.comment.channelId, holder.comment.channelThumbnail, iconResolveListener);
+    }
+
+    /**
+     * Reset image state for a view and cancel its pending loads so the
+     * hosting activity can be collected after navigation.
+     */
+    public void resetImageView(View row) {
+        if (row != null && row.getTag() instanceof ViewHolder) {
+            ViewHolder holder = (ViewHolder) row.getTag();
+            if (holder.imagesLoaded) {
+                holder.imagesLoaded = false;
+                if (holder.channelThumb != null) {
+                    ImageLoader.unbindImageView(holder.channelThumb);
+                }
             }
         }
     }

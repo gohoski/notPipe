@@ -2,11 +2,14 @@ package io.github.gohoski.notpipe.ui;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -14,39 +17,43 @@ import java.util.List;
 import io.github.gohoski.notpipe.R;
 import io.github.gohoski.notpipe.Utils;
 import io.github.gohoski.notpipe.data.VideoInfo;
+import io.github.gohoski.notpipe.util.ChannelIconResolver;
 import io.github.gohoski.notpipe.util.ImageLoader;
 
 /**
  * Adapter for video lists with lazy loading support.
  * Only loads images for items that have been explicitly marked as visible.
  */
-public class VideoAdapter extends ArrayAdapter<VideoInfo> {
-    private Context context;
-    private int layoutResource;
-    private boolean isInChannelActivity;
-    private ChannelIconListener iconListener;
-
-    public interface ChannelIconListener {
-        String getResolvedIcon(String channelId);
-        void onRequestFallbackIcon(String channelId);
-    }
+public class VideoAdapter extends ArrayAdapter<VideoInfo> implements ChannelIconRefreshable {
+    private final Context context;
+    private final int layoutResource;
+    private final boolean isFullLayout;
+    private final boolean isCompactLayout;
+    private final boolean isNoIconLayout;
+    private final LayoutInflater inflater;
+    private final boolean isInChannelActivity;
+    private final int itemHorizontalPadding;
+    private ChannelIconResolver.OnIconResolvedListener iconResolveListener;
 
     public VideoAdapter(Context context, int resource, List<VideoInfo> objects) {
-        super(context, resource, objects);
-        this.context = context;
-        this.layoutResource = resource;
-        this.isInChannelActivity = false;
+        this(context, resource, objects, false);
     }
 
     public VideoAdapter(Context context, int resource, List<VideoInfo> objects, boolean isInChannelActivity) {
         super(context, resource, objects);
         this.context = context;
         this.layoutResource = resource;
+        this.isFullLayout = resource == R.layout.item_video;
+        this.isCompactLayout = resource == R.layout.item_video_compact;
+        this.isNoIconLayout = resource == R.layout.item_video_noicon;
+        this.inflater = ((Activity) context).getLayoutInflater();
         this.isInChannelActivity = isInChannelActivity;
+        this.itemHorizontalPadding = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, 24, context.getResources().getDisplayMetrics());
     }
 
-    public void setChannelIconListener(ChannelIconListener listener) {
-        this.iconListener = listener;
+    public void setChannelIconResolveListener(ChannelIconResolver.OnIconResolvedListener listener) {
+        this.iconResolveListener = listener;
     }
 
     @Override
@@ -57,7 +64,6 @@ public class VideoAdapter extends ArrayAdapter<VideoInfo> {
         boolean isLazyLoading = parent instanceof AdapterLinearLayout;
 
         if (row == null) {
-            LayoutInflater inflater = ((Activity) context).getLayoutInflater();
             row = inflater.inflate(layoutResource, parent, false);
             holder = new ViewHolder();
             holder.videoTitle = (TextView) row.findViewById(R.id.video_title);
@@ -70,37 +76,19 @@ public class VideoAdapter extends ArrayAdapter<VideoInfo> {
             holder = (ViewHolder) row.getTag();
         }
 
+        // Apply padding dynamically based on parent type:
+        // ListView (phones) gets 24dp padding,while GridView (tablets) stays unpadded
+        if (parent instanceof ListView) {
+            row.setPadding(itemHorizontalPadding, row.getPaddingTop(), itemHorizontalPadding, row.getPaddingBottom());
+        } else if (parent instanceof GridView) {
+            row.setPadding(0, row.getPaddingTop(), 0, row.getPaddingBottom());
+        }
+
         final VideoInfo video = getItem(position);
 
-        if (layoutResource == R.layout.item_video_compact && (video.views <= 0 || video.publishedAt == null)) {
-            holder.videoTitle.setMaxLines(3);
-        } else {
-            holder.videoTitle.setMaxLines(2);
-        }
+        holder.videoTitle.setMaxLines((isCompactLayout || isNoIconLayout) && (video.views <= 0 || video.publishedAt == null) ? 3 : 2);
         holder.videoTitle.setText(video.title);
-
-        if (video.views > 0) {
-            String viewsText = Utils.formatNumber(context, video.views);
-            if (layoutResource == R.layout.item_video) {
-                holder.channelTitle.setText(video.channel + " · " + context.getString(R.string.views, viewsText) + (video.publishedAt == null ? "" : " · " + Utils.formatTimeAgo(context, video.publishedAt)));
-            } else if (layoutResource == R.layout.item_video_compact) {
-                if (isInChannelActivity) {
-                    holder.channelTitle.setText(context.getString(R.string.views, viewsText) + (video.publishedAt == null ? "" : "\n" + Utils.formatTimeAgo(context, video.publishedAt)));
-                } else {
-                    holder.channelTitle.setText(video.channel + "\n" + viewsText + (video.publishedAt == null ? "" : " · " + Utils.formatTimeAgo(context, video.publishedAt)));
-                }
-            } else {
-                holder.channelTitle.setText(video.channel);
-            }
-        } else {
-            if (layoutResource == R.layout.item_video) {
-                holder.channelTitle.setText(video.channel);
-            } else if (layoutResource == R.layout.item_video_compact) {
-                holder.channelTitle.setText(isInChannelActivity ? "" : video.channel);
-            } else {
-                holder.channelTitle.setText(video.channel);
-            }
-        }
+        holder.channelTitle.setText(buildMetaText(video));
 
         if (holder.duration != null) {
             if (video.duration != null && video.duration.length() > 0) {
@@ -113,13 +101,17 @@ public class VideoAdapter extends ArrayAdapter<VideoInfo> {
 
         holder.video = video;
         holder.imagesLoaded = false;
+        ImageLoader.cancelLoad(holder.videoThumb);
         holder.videoThumb.setImageBitmap(null);
+        holder.videoThumb.setTag(video.thumbnail);
         if (holder.channelThumb != null) {
+            ImageLoader.cancelLoad(holder.channelThumb);
             holder.channelThumb.setImageBitmap(null);
         }
 
-        // If we are in MainActivity (standard ListView), load images immediately!
-        // Standard ListViews recycle naturally, so OOM is not an issue here.
+        // If we are in MainActivity (standard ListView), load images immediately.
+        // Recycled views are guarded by ImageView tags, so a late decode never
+        // lands in the wrong row.
         if (!isLazyLoading) {
             ImageLoader.loadImage(video.thumbnail, holder.videoThumb);
             loadChannelIcon(holder);
@@ -127,6 +119,43 @@ public class VideoAdapter extends ArrayAdapter<VideoInfo> {
         }
 
         return row;
+    }
+
+    /**
+     * Builds the secondary text of a row: channel name, view count and publish date.
+     * Views and date are shown independently whenever either is available.
+     */
+    private String buildMetaText(VideoInfo video) {
+        String ago = video.publishedAt == null ? null : Utils.formatTimeAgo(context, video.publishedAt);
+
+        if (isCompactLayout || isNoIconLayout) {
+            String views = video.views > 0 ? Utils.formatNumber(context, video.views) : null;
+            if (isInChannelActivity) {
+                return join("\n", views == null ? null : context.getString(R.string.views, views), ago);
+            }
+            String meta = join(" · ", views, ago);
+            return meta.length() > 0 ? video.channel + "\n" + meta : video.channel;
+        }
+
+        if (isFullLayout) {
+            String views = video.views > 0 ? context.getString(R.string.views, Utils.formatNumber(context, video.views)) : null;
+            return join(" · ", video.channel, views, ago);
+        }
+
+        return video.channel;
+    }
+
+    /**
+     * Concatenates non-empty parts, inserting the separator between them.
+     */
+    private static String join(String separator, String... parts) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < parts.length; i++) {
+            if (parts[i] == null || parts[i].length() == 0) continue;
+            if (sb.length() > 0) sb.append(separator);
+            sb.append(parts[i]);
+        }
+        return sb.toString();
     }
 
     /**
@@ -147,6 +176,7 @@ public class VideoAdapter extends ArrayAdapter<VideoInfo> {
      * Specifically re-checks and loads the channel icon for a given row.
      * This is called by VideoActivity when a fallback URL has been successfully resolved.
      */
+    @Override
     public void updateChannelIconForView(View row, String resolvedChannelId) {
         if (row != null && row.getTag() instanceof ViewHolder) {
             ViewHolder holder = (ViewHolder) row.getTag();
@@ -157,47 +187,30 @@ public class VideoAdapter extends ArrayAdapter<VideoInfo> {
     }
 
     /**
-     * Centralized loading of channel icon with automatic fallback logic
+     * Loads the channel icon through the shared resolver, which handles
+     * resolved URLs and background fallback fetching automatically.
      */
-    private void loadChannelIcon(final ViewHolder holder) {
+    private void loadChannelIcon(ViewHolder holder) {
         if (holder.channelThumb == null || holder.video == null) return;
-        String urlToLoad = holder.video.channelThumbnail;
-        if (iconListener != null && holder.video.channelId != null && holder.video.channelId.length() > 0) {
-            String resolved = iconListener.getResolvedIcon(holder.video.channelId);
-            if ("FAILED".equals(resolved)) {
-                return;
-            } else if (resolved != null) {
-                urlToLoad = resolved;
-            }
-        }
-        if (urlToLoad == null || urlToLoad.length() == 0) {
-            if (iconListener != null && holder.video.channelId != null && holder.video.channelId.length() > 0) {
-                iconListener.onRequestFallbackIcon(holder.video.channelId);
-            }
-        } else {
-            ImageLoader.loadImage(urlToLoad, holder.channelThumb, true, new ImageLoader.ImageLoaderCallback() {
-                @Override
-                public void onFail() {
-                    if (iconListener != null && holder.video.channelId != null && holder.video.channelId.length() > 0) {
-                        String resolved = iconListener.getResolvedIcon(holder.video.channelId);
-                        if (resolved == null) {
-                            iconListener.onRequestFallbackIcon(holder.video.channelId);
-                        }
-                    }
-                }
-            });
-        }
+        ChannelIconResolver.loadInto(holder.channelThumb, holder.video.channelId, holder.video.channelThumbnail, iconResolveListener);
     }
 
     /**
      * Reset image state for a view so images are reloaded on next visibility check.
+     * Pending loads for the recycled views are cancelled as well.
      */
     public void resetImageView(View row) {
-        if (row.getTag() instanceof ViewHolder) {
+        if (row != null && row.getTag() instanceof ViewHolder) {
             ViewHolder holder = (ViewHolder) row.getTag();
-            holder.imagesLoaded = false;
-            if (holder.videoThumb != null) holder.videoThumb.setImageBitmap(null);
-            if (holder.channelThumb != null) holder.channelThumb.setImageBitmap(null);
+            if (holder.imagesLoaded) {
+                holder.imagesLoaded = false;
+                if (holder.videoThumb != null) {
+                    ImageLoader.unbindImageView(holder.videoThumb);
+                }
+                if (holder.channelThumb != null) {
+                    ImageLoader.unbindImageView(holder.channelThumb);
+                }
+            }
         }
     }
 

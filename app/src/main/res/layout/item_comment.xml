@@ -40,7 +40,6 @@
             android:id="@+id/content"
             android:layout_width="fill_parent"
             android:layout_height="0dp"
-
             android:layout_weight="1"
             tools:text="Наше дело не так однозначно, как может показаться: разбавленное изрядной долей эмпатии, рациональное мышление представляет собой интересный эксперимент проверки соответствующих условий активизации."/>
     </LinearLayout>

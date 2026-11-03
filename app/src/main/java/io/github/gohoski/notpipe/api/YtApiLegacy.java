@@ -146,10 +146,15 @@ class YtApiLegacy implements Metadata, VideoStream, Conversion {
         return baseUrl + "/direct_url?video_id=" + id + "&quality=" + quality;
     }
 
-    /** Conversion to MPEG-4 Visual or H.263 */
+    /** Conversion to MPEG-4 Visual (270p/360p) or H.263 */
     @Override
-    public String getConvUrl(String id, int codec) {
-        return baseUrl + "/direct_url?video_id=" + id + "&codec=" + (codec == 1 ? "h263" : "mpeg4");
+    public String getConvUrl(String id, Codec codec) {
+        switch (codec) {
+            case H263:
+                return baseUrl + "/direct_url?video_id=" + id + "&codec=h263";
+            default:
+                return baseUrl + "/direct_url?video_id=" + id + "&codec=mpeg4";
+        }
     }
 
     @Override public List<VideoInfo> getRelated(String id) throws IOException {
@@ -207,32 +212,41 @@ class YtApiLegacy implements Metadata, VideoStream, Conversion {
                 duration = json.getString("duration");
             } catch(JSONException ignored) { duration=null; }
             videos.add(new VideoInfo(json.getString("video_id"), json.getString("title"),
-                    Utils.parseUrl(baseUrl, json.getString("thumbnail")), json.getString("author"), "", "",
+                    Utils.parseUrl(baseUrl, json.getString("thumbnail")), null, null, null,
                     duration, Long.parseLong(json.getString("views")), Utils.parseRelativeDate(json.getString("published_at"))));
         }
         JSONObject json = obj.getObject("channel_info");
         String thumbnail = json.getString("thumbnail");
+        int subscribers; try {
+            subscribers = Integer.parseInt(json.getString("subscriber_count"));
+        } catch (Exception e) {
+            e.printStackTrace(); subscribers = -1;
+        }
         return new Channel(thumbnail.substring(thumbnail.lastIndexOf('/') + 1), json.getString("title"), Utils.parseUrl(baseUrl,json.getString("thumbnail")),
                 Utils.parseUrl(baseUrl,json.getString("banner").replace("w2560", "w900")), json.getString("description"),
-                Integer.parseInt(json.getString("subscriber_count")), videos);
+                subscribers, videos);
     }
 
     @Override
     public String getChannelIcon(String id) throws IOException {
-//        if (id.startsWith("@")) {
-//            HttpRequest req = new HttpRequest.Builder(baseUrl, "/get_author_videos.php").addParam("author", id).build();
-//            return Utils.parseUrl(baseUrl, JSON.getObject(HttpClient.executeToString(req)).getObject("channel_info").getString("thumbnail"));
-//        }
+        if (!id.startsWith("UC")) {
+            HttpRequest req = new HttpRequest.Builder(baseUrl, "/get_author_videos.php").addParam("author", id).build();
+            return Utils.parseUrl(baseUrl, JSON.getObject(HttpClient.executeToString(req)).getObject("channel_info").getString("thumbnail"));
+        }
         return baseUrl + "/channel_icon/" + id;
     }
 
     @Override
     public List<VideoInfo> getChannelVideos(String id, int sort) throws IOException {
         List<VideoInfo> videos = new ArrayList<VideoInfo>();
-        if (sort != 0) // We can get only latest channel videos
-            return videos;
-        HttpRequest req = new HttpRequest(baseUrl, "/playlist/UU" + id.substring(2));
-        JSONArray arr = JSON.getObject(HttpClient.executeToString(req)).getArray("videos");
+        HttpRequest req = new HttpRequest(baseUrl, "/playlist/" + (sort == 0 ? "UU" : "UULP") + id.substring(2));
+        JSONObject json = JSON.getObject(HttpClient.executeToString(req));
+        try {
+            String error = json.getString("error");
+            if (error != null && error.length() > 0)
+                throw new ContentUnavailableException(error);
+        } catch (JSONException ignored) {}
+        JSONArray arr = json.getArray("videos");
         for (int i = 0; i < arr.size(); i++) {
             JSONObject j = arr.getObject(i);
             Date publishedAt; try {

@@ -8,8 +8,8 @@ import java.io.IOException;
 
 public interface Conversion {
     /**
-     * @param codec 0 = MPEG-4 Visual (a.k.a. DivX, Xvid); 1 = H.263
+     * @param codec Conversion profile
      * @return Converted video URL
      */
-    String getConvUrl(String id, int codec) throws IOException;
+    String getConvUrl(String id, Codec codec) throws IOException;
 }

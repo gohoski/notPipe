@@ -4,6 +4,7 @@
 A working YouTube client for **Android 1.5+** utilizing multiple backend APIs. Made with ❤ and longevity in mind. Instead of depending on a single instance that might suddenly fail, the app leverages multiple instances concurrently for maximum reliability.
 * **Telegram channel for updates**: [@AppDataApps](https://t.me/AppDataApps)
 * Join our **[Retro Android Group](https://t.me/retroandroidgroup)** on Telegram!
+* Discord server: [Android Afterlife](https://discord.gg/2JqfEkQyck)
 
 ![notPipe](img/logo.png "Working YouTube for legacy Android devices")
 
@@ -11,35 +12,37 @@ A working YouTube client for **Android 1.5+** utilizing multiple backend APIs. M
 
 List of supported APIs:
 * [Invidious](https://docs.invidious.io/api/) (metadata, 360p)
-* [yt2009](https://github.com/ftde0/yt2009) (all qualities, conversion, channels)
+* [yt2009](https://github.com/ftde0/yt2009) (all qualities, conversion, channels, authorization)
 * [Piped](https://docs.piped.video/docs/api-documentation/) (metadata, 360p)
-* [YtAPILegacy](https://github.com/ZendoMusic/yt-api-legacy) (metadata, all qualities, conversion)
+* [TypeType](https://typetype.video) (metadata, all qualities, channels)
+* YtAPILegacy (metadata, all qualities, conversion)
 
 ## 📥 Download
 * [GitHub Releases](https://github.com/gohoski/notPipe/releases)
-* [OldMarket](http://oldmarket.store/app.php?id=536)
+* [OldMarket](http://oldmarket.xyz/app.php?p=io.github.gohoski.notpipe)
 * [MyIntCountry](http://myintcountry.ru/index.php?board=android&action=display&num=1)
 * Telegram (link at the top of the README)
 * [4PDA](https://4pda.to/forum/index.php?showtopic=1119054)
-* [Appteka](https://appteka.store/search?q=notPipe)
-* [NeonApps](http://neonapps.ru/?app=456)
 
 ## Features
-> [!NOTE]   
+> [!NOTE]  
 > This app does not connect to YouTube directly, which can bypass various network restrictions. See ["Why and how"](#why-and-how) for more information.
 * Popular, search
 * Videos, related videos, comments
 * Video playback in 360p/480p/720p/1080p
 * Channels
 * Video conversion for devices that do not support H.264 to MPEG-4 Visual and H.263 codecs
+* YouTube account login via yt2009 (recommendations, subscriptions, history, etc.)
 * Automatic updates of the list of instances from a URL
+* Video downloader
 * Tablet UI
 ### TODO
-* Video download
-* Audio download or music mode
-* YouTube account authorization via YTFixer/yt2009 (recommendations, subscriptions, history, etc.)
+* Audio downloader
 * Playlists
 * Local account for subscriptions (NewPipe-like)
+* SponsorBlock
+* Return YouTube Dislike
+* Audio background playback
 
 ## Solving issues on Android ≤2.3
 *(videos lag or do not play at all)*
@@ -81,7 +84,7 @@ It is recommended to use AS while contributing; however, you may use another IDE
 ## Acknowledgments
 * [How-to-develop-and-backport-for-Android-2.1-in-2020](https://github.com/Mik-el/How-to-develop-and-backport-for-Android-2.1-in-2020) project template by Michele
 * [NNJSON](https://github.com/shinovon/NNJSON) library by nnproject
-* **Special thanks to all [Invidious](https://github.com/iv-org/invidious/graphs/contributors?all=1), [yt2009](https://github.com/ftde0/yt2009/graphs/contributors?all=1), [Piped](https://github.com/TeamPiped/Piped-Backend/graphs/contributors?all=1) and [YtAPILegacy](https://github.com/ZendoMusic/yt-api-legacy/graphs/contributors?all=1) contributors for making these awesome APIs possible**
+* **Special thanks to all [Invidious](https://github.com/iv-org/invidious/graphs/contributors?all=1), [yt2009](https://github.com/ftde0/yt2009/graphs/contributors?all=1), [TypeType](https://github.com/TypeType-Video/TypeType-Server/graphs/contributors?all=1) and [Piped](https://github.com/TeamPiped/Piped-Backend/graphs/contributors?all=1) contributors for making these awesome APIs possible**
 ### Previous YouTube clients
 Although not used as inspiration or a codebase, these other attempts of implementing YouTube deserve acknowledgment, as they led to the idea of this project.
 * [Mini YouTube by monobogdan](https://github.com/monobogdan/selfeco) — client for Android 2.0+ utilizing a hardcoded Invidious instance with requests proxied to monobogdan's Russian server. The proxy server is dead and considering it has a single point of failure, it's not worth it to compile the project with a new instance even with the proxy removed.

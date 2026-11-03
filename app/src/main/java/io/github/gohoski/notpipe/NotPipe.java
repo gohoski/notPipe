@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Build;
 
 import io.github.gohoski.notpipe.api.Manager;
+import io.github.gohoski.notpipe.auth.AuthManager;
 import io.github.gohoski.notpipe.config.ConfigManager;
 
 /**
@@ -24,9 +25,12 @@ public class NotPipe extends Application {
         // Initialize ConfigManager first (Manager depends on it)
         ConfigManager.init(this);
         ConfigManager.getInstance().ensureInstancesConfigured();
+        AuthManager.init(this);
         Manager.init();
         SSLDisabler.disableSSLCertificateChecking();
-//        System.setProperty("http.keepAlive", "false");
+        if (NotPipe.SDK < 9) {
+            System.setProperty("http.keepAlive", "false");
+        }
     }
 
     public static Context getAppContext() {

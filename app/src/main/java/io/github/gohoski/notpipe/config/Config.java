@@ -9,11 +9,12 @@ import java.util.List;
  * Uses Java 1.5 compatible getters/setters (no Lombok/data classes).
  */
 public class Config {
-
+    public static final String DEFAULT_DOWNLOAD_FOLDER = "/sdcard/Download";
     private List<String> invidiousInstances;
     private List<String> yt2009Instances;
     private List<String> pipedInstances;
     private List<String> ytApiLegacyInstances;
+    private List<String> typetypeInstances;
     private String preferredQuality;
     private boolean updateInstancesFromUrl;
     private String instancesUpdateUrl;
@@ -25,13 +26,22 @@ public class Config {
     private int convertCodec;
     private boolean asyncSetVideoUri;
     private boolean fullscreenRotateLandscape;
+    private String downloadFolder;
+    private boolean hideShortsRecommendations;
+    private boolean hideShortsSubscriptions;
+    private int shortLengthSeconds;
 
     Config() {
         invidiousInstances = new ArrayList<String>();
         yt2009Instances = new ArrayList<String>();
         pipedInstances = new ArrayList<String>();
         ytApiLegacyInstances = new ArrayList<String>();
+        typetypeInstances = new ArrayList<String>();
         fullscreenRotateLandscape = true;
+        downloadFolder = DEFAULT_DOWNLOAD_FOLDER;
+//        hideShortsRecommendations = true;
+//        hideShortsSubscriptions = true;
+//        shortLengthSeconds = 90;
     }
 
     /**
@@ -42,6 +52,7 @@ public class Config {
         yt2009Instances = new ArrayList<String>(other.yt2009Instances);
         pipedInstances = new ArrayList<String>(other.pipedInstances);
         ytApiLegacyInstances = new ArrayList<String>(other.ytApiLegacyInstances);
+        typetypeInstances = new ArrayList<String>(other.typetypeInstances);
         preferredQuality = other.preferredQuality;
         updateInstancesFromUrl = other.updateInstancesFromUrl;
         instancesUpdateUrl = other.instancesUpdateUrl;
@@ -53,6 +64,10 @@ public class Config {
         convertCodec = other.convertCodec;
         asyncSetVideoUri = other.asyncSetVideoUri;
         fullscreenRotateLandscape = other.fullscreenRotateLandscape;
+        downloadFolder = other.downloadFolder;
+        hideShortsRecommendations = other.hideShortsRecommendations;
+        hideShortsSubscriptions = other.hideShortsSubscriptions;
+        shortLengthSeconds = other.shortLengthSeconds;
     }
 
     public List<String> getInvidiousInstances() {
@@ -85,6 +100,14 @@ public class Config {
 
     public void setYtApiLegacyInstances(List<String> instances) {
         this.ytApiLegacyInstances = instances;
+    }
+
+    public List<String> getTypeTypeInstances() {
+        return typetypeInstances;
+    }
+
+    public void setTypeTypeInstances(List<String> instances) {
+        this.typetypeInstances = instances;
     }
 
     public String getPreferredQuality() {
@@ -173,6 +196,38 @@ public class Config {
 
     public void setFullscreenRotateLandscape(boolean rotate) {
         this.fullscreenRotateLandscape = rotate;
+    }
+
+    public String getDownloadFolder() {
+        return downloadFolder;
+    }
+
+    public void setDownloadFolder(String folder) {
+        this.downloadFolder = folder;
+    }
+
+    public boolean isHideShortsRecommendations() {
+        return hideShortsRecommendations;
+    }
+
+    public void setHideShortsRecommendations(boolean hide) {
+        this.hideShortsRecommendations = hide;
+    }
+
+    public boolean isHideShortsSubscriptions() {
+        return hideShortsSubscriptions;
+    }
+
+    public void setHideShortsSubscriptions(boolean hide) {
+        this.hideShortsSubscriptions = hide;
+    }
+
+    public int getShortLengthSeconds() {
+        return shortLengthSeconds;
+    }
+
+    public void setShortLengthSeconds(int seconds) {
+        this.shortLengthSeconds = seconds;
     }
 
     /**

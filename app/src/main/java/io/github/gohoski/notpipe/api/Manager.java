@@ -104,6 +104,15 @@ public class Manager {
             videoInstances.add(piped);
         }
 
+        List<String> typeTypeList = config.getTypeTypeInstances();
+        for (int i = 0; i < typeTypeList.size(); i++) {
+            TypeType typeType = new TypeType(typeTypeList.get(i));
+            metadataInstances.add(typeType);
+            videoInstances.add(typeType);
+            hqInstances.add(typeType);
+            channelApiInstances.add(typeType);
+        }
+
         List<String> ytApiInstances = config.getYtApiLegacyInstances();
         for (int i = 0; i < ytApiInstances.size(); i++) {
             YtApiLegacy ytApi = new YtApiLegacy(ytApiInstances.get(i));
@@ -168,32 +177,31 @@ public class Manager {
         return conversionInstances;
     }
 
-    public String getVideoUrl(String videoId, String quality, int timeout) throws IOException {
-        return getVideoUrl(videoId, quality, timeout, null, null);
+    /**
+     * Notified each time a failover loop starts a fetch attempt against another instance.
+     */
+    public interface InstanceAttemptListener {
+        void onInstanceAttempt(VideoStream instance);
     }
 
-    public String getVideoUrl(String videoId, String quality, int timeout, VideoStream preferredInstance, VideoStream[] successfulInstance) throws IOException {
+    public String getVideoUrl(String videoId, String quality, int timeout, VideoStream[] successfulInstance) throws IOException {
+        return getVideoUrl(videoId, quality, timeout, successfulInstance, null);
+    }
+
+    public String getVideoUrl(String videoId, String quality, int timeout, VideoStream[] successfulInstance, InstanceAttemptListener attemptListener) throws IOException {
         List<VideoStream> targetList = "360".equals(quality) ? new ArrayList<VideoStream>(videoInstances) : new ArrayList<VideoStream>(hqInstances);
         if (targetList.isEmpty()) {
             reloadInstances();
             throw new IOException("No video instances left");
         }
 
-        if (preferredInstance != null && targetList.contains(preferredInstance)) {
-            targetList.remove(preferredInstance);
-            targetList.add(0, preferredInstance);
-            if (targetList.size() > 1) {
-                List<VideoStream> rest = targetList.subList(1, targetList.size());
-                java.util.Collections.shuffle(rest, random);
-            }
-        } else {
-            java.util.Collections.shuffle(targetList, random);
-        }
+        java.util.Collections.shuffle(targetList, random);
 
         Throwable lastError = null;
 
         for (int i = 0; i < targetList.size(); i++) {
             VideoStream currentInstance = targetList.get(i);
+            if (attemptListener != null) attemptListener.onInstanceAttempt(currentInstance);
             try {
                 String url = currentInstance.getVideoUrl(videoId, quality, timeout);
                 if (successfulInstance != null && successfulInstance.length > 0) {
@@ -224,11 +232,11 @@ public class Manager {
         throw new IOException("All instances failed");
     }
 
-    public String getConvUrl(String videoId, String quality, int codec) throws IOException {
-        return getConvUrl(videoId, quality, codec, null, null);
+    public String getConvUrl(String videoId, String quality, Codec codec, VideoStream[] successfulInstance) throws IOException {
+        return getConvUrl(videoId, quality, codec, successfulInstance, null);
     }
 
-    public String getConvUrl(String videoId, String quality, int codec, VideoStream preferredInstance, VideoStream[] successfulInstance) throws IOException {
+    public String getConvUrl(String videoId, String quality, Codec codec, VideoStream[] successfulInstance, InstanceAttemptListener attemptListener) throws IOException {
         if (configManager.getConfig().isConvertVideos()) {
             if (conversionInstances.isEmpty()) {
                 reloadInstances();
@@ -237,20 +245,13 @@ public class Manager {
 
             List<Conversion> targetConvList = new ArrayList<Conversion>(conversionInstances);
 
-            // Prioritize the preferred instance if it supports conversion
-            if (preferredInstance instanceof Conversion && targetConvList.contains((Conversion) preferredInstance)) {
-                targetConvList.remove((Conversion) preferredInstance);
-                targetConvList.add(0, (Conversion) preferredInstance);
-                if (targetConvList.size() > 1) {
-                    List<Conversion> rest = targetConvList.subList(1, targetConvList.size());
-                    java.util.Collections.shuffle(rest, random);
-                }
-            } else {
-                java.util.Collections.shuffle(targetConvList, random);
-            }
+            java.util.Collections.shuffle(targetConvList, random);
 
             for (int i = 0; i < targetConvList.size(); i++) {
                 Conversion currentInstance = targetConvList.get(i);
+                if (attemptListener != null && currentInstance instanceof VideoStream) {
+                    attemptListener.onInstanceAttempt((VideoStream) currentInstance);
+                }
                 try {
                     String url = currentInstance.getConvUrl(videoId, codec);
                     if (successfulInstance != null && successfulInstance.length > 0 && currentInstance instanceof VideoStream) {
@@ -271,7 +272,7 @@ public class Manager {
         }
 
         // Fall back to standard stream URLs if conversion is disabled or if all conversion attempts fail
-        return getVideoUrl(videoId, quality, HttpClient.CONVERSION_TIMEOUT, preferredInstance, successfulInstance);
+        return getVideoUrl(videoId, quality, HttpClient.CONVERSION_TIMEOUT, successfulInstance, attemptListener);
     }
 
     /**
@@ -282,55 +283,94 @@ public class Manager {
         return (T) Proxy.newProxyInstance(
                 interfaceClass.getClassLoader(),
                 new Class<?>[]{ interfaceClass },
-                new InvocationHandler() {
-                    private T currentInstance = null;
-                    private void pickNewInstance() {
-                        if (!pool.isEmpty()) {
-                            currentInstance = pool.get(random.nextInt(pool.size()));
-                        } else {
-                            currentInstance = null;
-                        }
-                    }
-
-                    @Override
-                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                        if (currentInstance == null) pickNewInstance();
-
-                        Throwable lastError = null;
-                        List<T> localPool = new ArrayList<T>(pool);
-
-                        while (!localPool.isEmpty()) {
-                            if (currentInstance == null || !localPool.contains(currentInstance)) {
-                                currentInstance = localPool.get(random.nextInt(localPool.size()));
-                            }
-
-                            try {
-                                return method.invoke(currentInstance, args);
-                            } catch (InvocationTargetException e) {
-                                if (e.getCause() instanceof ContentUnavailableException) {
-                                    throw e.getCause();
-                                }
-                                e.printStackTrace();
-                                lastError = e.getCause();
-                                localPool.remove(currentInstance);
-
-                                if (isDeadInstanceError(lastError)) {
-                                    removeDeadInstance(currentInstance);
-                                }
-                                currentInstance = null;
-                            }
-                        }
-
-                        if (pool.isEmpty()) {
-                            reloadInstances();
-                            showConnectionErrorToast();
-                        }
-
-                        if (lastError != null) throw lastError;
-                        throw new IOException("No available instances left for " + interfaceClass.getSimpleName());
-                    }
-                }
+                new StatefulFallbackHandler<T>(interfaceClass, pool)
         );
+    }
+
+    /**
+     * Invocation handler backing the stateful fallback proxies, retaining one instance per proxy.
+     */
+    private class StatefulFallbackHandler<T> implements InvocationHandler {
+        private final Class<T> interfaceClass;
+        private final List<T> pool;
+        private T currentInstance = null;
+
+        StatefulFallbackHandler(Class<T> interfaceClass, List<T> pool) {
+            this.interfaceClass = interfaceClass;
+            this.pool = pool;
+        }
+
+        Object getCurrentInstance() {
+            return currentInstance;
+        }
+
+        private void pickNewInstance() {
+            if (!pool.isEmpty()) {
+                currentInstance = pool.get(random.nextInt(pool.size()));
+            } else {
+                currentInstance = null;
+            }
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            if (currentInstance == null) pickNewInstance();
+
+            Throwable lastError = null;
+            List<T> localPool = new ArrayList<T>(pool);
+
+            while (!localPool.isEmpty()) {
+                if (currentInstance == null || !localPool.contains(currentInstance)) {
+                    currentInstance = localPool.get(random.nextInt(localPool.size()));
+                }
+
+                try {
+                    return method.invoke(currentInstance, args);
+                } catch (InvocationTargetException e) {
+                    if (e.getCause() instanceof ContentUnavailableException) {
+                        throw e.getCause();
+                    }
+                    e.printStackTrace();
+                    lastError = e.getCause();
+                    localPool.remove(currentInstance);
+
+                    if (isDeadInstanceError(lastError)) {
+                        removeDeadInstance(currentInstance);
+                    }
+                    currentInstance = null;
+                }
+            }
+
+            if (pool.isEmpty()) {
+                reloadInstances();
+                showConnectionErrorToast();
+            }
+
+            if (lastError != null) throw lastError;
+            throw new IOException("No available instances left for " + interfaceClass.getSimpleName());
+        }
+    }
+
+    /**
+     * Returns the raw instance currently retained by a stateful fallback proxy,
+     * or null when the given object is not such a proxy or hasn't served a request yet.
+     */
+    public Object getCurrentInstance(Object proxy) {
+        if (proxy == null || !Proxy.isProxyClass(proxy.getClass())) return null;
+        InvocationHandler handler = Proxy.getInvocationHandler(proxy);
+        if (handler instanceof StatefulFallbackHandler) {
+            return ((StatefulFallbackHandler) handler).getCurrentInstance();
+        }
+        return null;
+    }
+
+    /**
+     * Resolves the VideoStream capability of the instance currently backing the given
+     * Metadata fallback proxy, or null when it cannot serve video streams.
+     */
+    public VideoStream resolveVideoStream(Metadata metadata) {
+        Object current = getCurrentInstance(metadata);
+        return current instanceof VideoStream ? (VideoStream) current : null;
     }
 
     public void removeDeadInstance(Object instance) {

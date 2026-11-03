@@ -20,6 +20,7 @@ public class ConfigManager {
     private static final String KEY_YT2009 = "yt2009";
     private static final String KEY_PIPED = "piped";
     private static final String KEY_YTAPILEGACY = "ytapilegacy";
+    private static final String KEY_TYPETYPE = "typetype";
     private static final String KEY_PREFERRED_QUALITY = "preferred_quality";
     private static final String KEY_UPDATE_INSTANCES = "update_instances_from_url";
     private static final String KEY_INSTANCES_URL = "instances_update_url";
@@ -31,6 +32,10 @@ public class ConfigManager {
     private static final String KEY_CONVERT_CODEC = "convert_codec";
     private static final String KEY_ASYNC_SET_VIDEO_URI = "async_set_video_uri";
     private static final String KEY_FULLSCREEN_ROTATE = "fullscreen_rotate_landscape";
+    private static final String KEY_DOWNLOAD_FOLDER = "download_folder";
+    private static final String KEY_HIDE_SHORTS_RECOMMENDATIONS = "hide_shorts_recommendations";
+    private static final String KEY_HIDE_SHORTS_SUBSCRIPTIONS = "hide_shorts_subscriptions";
+    private static final String KEY_SHORT_LENGTH_SECONDS = "short_length_seconds";
 
     private static final String SEPARATOR = ";";
 
@@ -78,6 +83,7 @@ public class ConfigManager {
         editor.putString(KEY_YT2009, joinList(config.getYt2009Instances()));
         editor.putString(KEY_PIPED, joinList(config.getPipedInstances()));
         editor.putString(KEY_YTAPILEGACY, joinList(config.getYtApiLegacyInstances()));
+        editor.putString(KEY_TYPETYPE, joinList(config.getTypeTypeInstances()));
         editor.putString(KEY_PREFERRED_QUALITY, config.getPreferredQuality());
         editor.putBoolean(KEY_UPDATE_INSTANCES, config.isUpdateInstancesFromUrl());
         editor.putString(KEY_INSTANCES_URL, config.getInstancesUpdateUrl());
@@ -89,6 +95,14 @@ public class ConfigManager {
         editor.putInt(KEY_CONVERT_CODEC, config.getConvertCodec());
         editor.putBoolean(KEY_ASYNC_SET_VIDEO_URI, config.isAsyncSetVideoUri());
         editor.putBoolean(KEY_FULLSCREEN_ROTATE, config.isFullscreenRotateLandscape());
+        editor.putBoolean(KEY_HIDE_SHORTS_RECOMMENDATIONS, config.isHideShortsRecommendations());
+        editor.putBoolean(KEY_HIDE_SHORTS_SUBSCRIPTIONS, config.isHideShortsSubscriptions());
+        editor.putInt(KEY_SHORT_LENGTH_SECONDS, config.getShortLengthSeconds());
+        String downloadFolder = config.getDownloadFolder();
+        if (downloadFolder == null || downloadFolder.trim().length() == 0) {
+            downloadFolder = Config.DEFAULT_DOWNLOAD_FOLDER;
+        }
+        editor.putString(KEY_DOWNLOAD_FOLDER, downloadFolder);
         editor.commit();
     }
 
@@ -118,6 +132,11 @@ public class ConfigManager {
             config.setYtApiLegacyInstances(parseList(ytApiLegacyStr));
         }
 
+        String typetypeStr = prefs.getString(KEY_TYPETYPE, "");
+        if (typetypeStr.length() > 0) {
+            config.setTypeTypeInstances(parseList(typetypeStr));
+        }
+
         config.setPreferredQuality(prefs.getString(KEY_PREFERRED_QUALITY, "360"));
         config.setUpdateInstancesFromUrl(prefs.getBoolean(KEY_UPDATE_INSTANCES, false));
         config.setInstancesUpdateUrl(prefs.getString(KEY_INSTANCES_URL, "http://144.31.189.129/notPipe.json"));
@@ -126,6 +145,14 @@ public class ConfigManager {
         config.setLastUpdate(prefs.getLong(KEY_LAST_UPDATE, 0L));
         config.setAsyncSetVideoUri(prefs.getBoolean(KEY_ASYNC_SET_VIDEO_URI, NotPipe.SDK >= 14 && NotPipe.SDK <= 18));
         config.setFullscreenRotateLandscape(prefs.getBoolean(KEY_FULLSCREEN_ROTATE, true));
+        config.setHideShortsRecommendations(prefs.getBoolean(KEY_HIDE_SHORTS_RECOMMENDATIONS, true));
+        config.setHideShortsSubscriptions(prefs.getBoolean(KEY_HIDE_SHORTS_SUBSCRIPTIONS, true));
+        config.setShortLengthSeconds(prefs.getInt(KEY_SHORT_LENGTH_SECONDS, 90));
+
+        String downloadFolder = prefs.getString(KEY_DOWNLOAD_FOLDER, Config.DEFAULT_DOWNLOAD_FOLDER);
+        if (downloadFolder != null && downloadFolder.trim().length() > 0) {
+            config.setDownloadFolder(downloadFolder.trim());
+        }
 
         if (prefs.contains(KEY_CONVERT_VIDEOS)) {
             config.setStreamPlayback(prefs.getBoolean(KEY_STREAM_PLAYBACK, true));
@@ -133,22 +160,20 @@ public class ConfigManager {
             config.setUseExternalPlayer(prefs.getBoolean(KEY_EXTERNAL_PLAYER, false));
             config.setConvertCodec(prefs.getInt(KEY_CONVERT_CODEC, 0));
         } else { // First time setup
-            boolean convert, stream, external = false;
+            boolean convert, external = false;
             boolean notV7 = !Utils.isV7();
             if (NotPipe.SDK < 5 || (NotPipe.SDK < 11 && notV7)) {
                 convert = true;
-                stream = false;
             } else {
                 convert = false;
-                stream = true;
             }
             config.setConvertVideos(convert);
-            config.setStreamPlayback(stream);
+            config.setStreamPlayback(true);
             config.setUseExternalPlayer(external);
             config.setConvertCodec(0);
             SharedPreferences.Editor editor = prefs.edit();
             editor.putBoolean(KEY_CONVERT_VIDEOS, convert);
-            editor.putBoolean(KEY_STREAM_PLAYBACK, stream);
+            editor.putBoolean(KEY_STREAM_PLAYBACK, true);
             editor.putBoolean(KEY_EXTERNAL_PLAYER, external);
             editor.putInt(KEY_CONVERT_CODEC, 0);
             editor.commit();
@@ -168,7 +193,8 @@ public class ConfigManager {
         if (config.getInvidiousInstances().isEmpty()
                 && config.getYt2009Instances().isEmpty()
                 && config.getPipedInstances().isEmpty()
-                && config.getYtApiLegacyInstances().isEmpty()) {
+                && config.getYtApiLegacyInstances().isEmpty()
+                && config.getTypeTypeInstances().isEmpty()) {
             config.applyDefaults();
             saveToPrefs();
         }

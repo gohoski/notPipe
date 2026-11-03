@@ -4,6 +4,7 @@
 Рабочий клиент YouTube для **Android 1.5+**, использующий несколько серверных API. Создан с ❤ и расчётом на долговечность. Вместо того чтобы зависеть от одного инстанса, который может внезапно перестать работать, приложение параллельно использует сразу несколько для максимальной надежности.
 * **Telegram-канал по проекту:** [@AppDataApps](https://t.me/AppDataApps)
 * Заходите в наш Telegram-чат **[Retro Android](https://t.me/retroandroidgroup)**!
+* Discord-сервер: [Android Afterlife](https://discord.gg/2JqfEkQyck)
 
 ![notPipe](img/logo.png "Рабочий Ютуб для старых андроидов")
 
@@ -13,16 +14,16 @@
 * [Invidious](https://docs.invidious.io/api/) (метаданные, 360p)
 * [yt2009](https://github.com/ftde0/yt2009) (все качества, конвертация, каналы)
 * [Piped](https://docs.piped.video/docs/api-documentation/) (метаданные, 360p)
-* [YtAPILegacy](https://github.com/ZendoMusic/yt-api-legacy) (метаданные, все качества, конвертация)
+* [TypeType](https://typetype.video) (метаданные, все качества, каналы)
+* YtAPILegacy (метаданные, все качества, конвертация)
 
 ## 📥 Скачать
 * [GitHub Releases](https://github.com/gohoski/notPipe/releases)
-* [OldMarket](http://oldmarket.store/app.php?id=536)
+* [OldMarket](http://oldmarket.xyz/app.php?p=io.github.gohoski.notpipe)
 * [Моя Интернет Страна](http://myintcountry.ru/index.php?board=android&action=display&num=1)
 * Telegram (ссылка в начале README)
 * [4PDA](https://4pda.to/forum/index.php?showtopic=1119054)
-* [Appteka](https://appteka.store/search?q=notPipe)
-* [NeonApps](http://neonapps.ru/?app=456)
+
 ## Возможности
 > [!NOTE]  
 > Приложение не подключается к YouTube напрямую, поэтому это обходит различные сетевые ограничения. См. «[Зачем и как это работает](#зачем-и-как-это-работает)».

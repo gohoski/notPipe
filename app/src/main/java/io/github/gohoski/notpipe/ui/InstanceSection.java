@@ -129,7 +129,7 @@ public class InstanceSection extends LinearLayout {
         instances = getInstances();
 
         if (instances.contains(url)) {
-            Toast.makeText(context, "Instance already exists", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, R.string.instance_exist, Toast.LENGTH_SHORT).show();
             return;
         }
         addInstanceRow(url);

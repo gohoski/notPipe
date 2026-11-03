@@ -114,13 +114,15 @@ public class ChannelActivity extends Activity {
             findViewById(R.id.for_you_loading).setVisibility(View.GONE);
             forYouList.setVisibility(View.VISIBLE);
 
-            forYouAdapter = new VideoAdapter(context, R.layout.item_video_compact, forYouVideos, true);
+            int forYouLayout = forYouList instanceof GridView
+                    ? R.layout.item_video_noicon
+                    : R.layout.item_video_compact;
+            forYouAdapter = new VideoAdapter(context, forYouLayout, forYouVideos, true);
             setAdapterForView(forYouList, forYouAdapter);
 
             forYouList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    ImageLoader.clearCache(); System.gc();
                     Intent intent = new Intent(ChannelActivity.this, VideoActivity.class);
                     intent.putExtra("ID", forYouVideos.get(position).id);
                     startActivity(intent);
@@ -209,12 +211,14 @@ public class ChannelActivity extends Activity {
             }
         }
         if (fetchedVideos != null) {
-            videosAdapter = new VideoAdapter(context, R.layout.item_video_compact, fetchedVideos, true);
+            int layout = videosList instanceof GridView
+                    ? R.layout.item_video_noicon
+                    : R.layout.item_video_compact;
+            videosAdapter = new VideoAdapter(context, layout, fetchedVideos, true);
             setAdapterForView(videosList, videosAdapter);
             videosList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    ImageLoader.clearCache(); System.gc();
                     Intent intent = new Intent(ChannelActivity.this, VideoActivity.class);
                     intent.putExtra("ID", fetchedVideos.get(position).id);
                     startActivity(intent);
@@ -333,7 +337,13 @@ public class ChannelActivity extends Activity {
             channelId = channel.id;
 
             ((TextView) findViewById(R.id.title)).setText(channel.title);
-            ((TextView) findViewById(R.id.subscribers)).setText(getString(R.string.subscribers, Utils.formatNumber(context, channel.subscriberCount)));
+            TextView subscribersView = (TextView) findViewById(R.id.subscribers);
+            if (channel.subscriberCount < 1) {
+                subscribersView.setVisibility(View.GONE);
+            } else {
+                subscribersView.setVisibility(View.VISIBLE);
+                subscribersView.setText(getString(R.string.subscribers, Utils.formatNumber(context, channel.subscriberCount)));
+            }
             ((TextView) findViewById(R.id.description)).setText(channel.description);
             ImageLoader.loadImage(channel.thumbnail, ((ImageView) findViewById(R.id.thumbnail)), false);
             ImageLoader.loadImage(channel.banner, banner, false);

@@ -13,6 +13,7 @@
             android:id="@+id/video_thumbnail"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:scaleType="centerCrop"
             tools:src="@android:color/white" />
         <TextView
             android:id="@+id/duration"

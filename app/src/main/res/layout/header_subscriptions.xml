@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<HorizontalScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:fadingEdge="horizontal"
+    android:fadingEdgeLength="16dip"
+    android:scrollbars="none"
+    android:background="@drawable/bg_channels_header"
+    android:visibility="gone">
+
+    <LinearLayout
+        android:id="@+id/channels_strip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="4dip"
+        android:paddingRight="4dip"
+        android:paddingTop="8dip"
+        android:paddingBottom="6dip" />
+</HorizontalScrollView>

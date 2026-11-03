@@ -55,7 +55,6 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Moved below the channel info -->
     <ProgressBar
         android:id="@+id/loading"
         android:layout_width="wrap_content"

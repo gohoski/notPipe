@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:paddingLeft="4dip"
+    android:paddingRight="4dip"
+    android:paddingTop="2dip"
+    android:paddingBottom="4dip"
+    android:clickable="true"
+    android:background="@android:drawable/list_selector_background">
+
+    <ImageView
+        android:id="@+id/channel_thumb"
+        android:layout_width="50dip"
+        android:layout_height="50dip"
+        android:padding="2dip"
+        android:scaleType="centerCrop"
+        android:background="@drawable/channel_thumb_border"
+        tools:src="@android:color/white" />
+
+    <TextView
+        android:id="@+id/channel_title"
+        android:layout_width="52dip"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dip"
+        android:gravity="center"
+        android:textSize="11sp"
+        android:textColor="#CCCCCC"
+        android:singleLine="true"
+        android:ellipsize="end"
+        tools:text="Channel" />
+</LinearLayout>
