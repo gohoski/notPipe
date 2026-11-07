@@ -33,6 +33,7 @@ public class VideoAdapter extends ArrayAdapter<VideoInfo> implements ChannelIcon
     private final LayoutInflater inflater;
     private final boolean isInChannelActivity;
     private final int itemHorizontalPadding;
+    private final int gridItemHeight;
     private ChannelIconResolver.OnIconResolvedListener iconResolveListener;
 
     public VideoAdapter(Context context, int resource, List<VideoInfo> objects) {
@@ -50,6 +51,8 @@ public class VideoAdapter extends ArrayAdapter<VideoInfo> implements ChannelIcon
         this.isInChannelActivity = isInChannelActivity;
         this.itemHorizontalPadding = (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, 24, context.getResources().getDisplayMetrics());
+        this.gridItemHeight = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, this.isFullLayout ? 250 : 220, context.getResources().getDisplayMetrics());
     }
 
     public void setChannelIconResolveListener(ChannelIconResolver.OnIconResolvedListener listener) {
@@ -76,12 +79,18 @@ public class VideoAdapter extends ArrayAdapter<VideoInfo> implements ChannelIcon
             holder = (ViewHolder) row.getTag();
         }
 
-        // Apply padding dynamically based on parent type:
-        // ListView (phones) gets 24dp padding,while GridView (tablets) stays unpadded
+        // Apply padding and height dynamically based on parent type:
+        // ListView/AdapterLinearLayout stays wrap_content with padding.
+        // GridView (landscape tablets) gets fixed height to stop jitter and 0 horizontal padding.
         if (parent instanceof ListView) {
             row.setPadding(itemHorizontalPadding, row.getPaddingTop(), itemHorizontalPadding, row.getPaddingBottom());
         } else if (parent instanceof GridView) {
             row.setPadding(0, row.getPaddingTop(), 0, row.getPaddingBottom());
+            ViewGroup.LayoutParams lp = row.getLayoutParams();
+            if (lp != null && lp.height != gridItemHeight && !isInChannelActivity) {
+                lp.height = gridItemHeight;
+                row.setLayoutParams(lp);
+            }
         }
 
         final VideoInfo video = getItem(position);

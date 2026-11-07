@@ -1,93 +1,326 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<TabHost xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/tabHost"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical">
-    <!-- Landscape video layout for tablets (large-land) -->
-
-    <View
-        android:layout_width="0px"
-        android:layout_height="0px"
-        android:focusable="true"
-        android:focusableInTouchMode="true"/>
+    android:layout_height="fill_parent">
 
     <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <AutoCompleteTextView
-            android:id="@+id/search_query"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:hint="@android:string/search_go"
-            android:layout_weight="1"
-            android:saveEnabled="false"
-            android:singleLine="true"
-            android:imeOptions="actionSearch"
-            android:maxLength="100"/>
-
-        <ImageButton
-            android:id="@+id/search_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="fill_parent"
-            android:src="@android:drawable/ic_menu_search"/>
-    </LinearLayout>
-
-    <ProgressBar
-        android:id="@+id/loading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        tools:visibility="gone"/>
-
-    <LinearLayout
-        android:id="@+id/no_popular"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:background="@drawable/rounded_background"
-        android:layout_margin="16dp"
-        android:orientation="vertical"
-        android:visibility="gone">
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/no_popular"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:gravity="center"/>
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="@string/no_popular_"/>
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/empty_videos"
-        android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:gravity="center"
-        android:text="@string/no_videos"
-        android:textSize="18sp"
-        android:visibility="gone" />
+        android:orientation="vertical">
 
-    <GridView
-        android:id="@+id/videos"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:numColumns="auto_fit"
-        android:columnWidth="280dp"
-        android:stretchMode="columnWidth"
-        android:verticalSpacing="20dp"
-        android:horizontalSpacing="20dp"
-        android:paddingLeft="24dp"
-        android:paddingRight="24dp"
-        android:clipToPadding="false"
-        android:scrollbarStyle="outsideOverlay"
-        android:clickable="true"
-        android:choiceMode="none"
-        tools:listitem="@layout/item_video_noicon"/>
-</LinearLayout>
+        <!-- Steals initial focus so keyboard doesn't pop up on start -->
+        <View
+            android:layout_width="0px"
+            android:layout_height="0px"
+            android:focusable="true"
+            android:focusableInTouchMode="true"/>
+
+        <TabWidget
+            android:id="@android:id/tabs"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"/>
+
+        <FrameLayout
+            android:id="@android:id/tabcontent"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
+
+            <LinearLayout
+                android:id="@+id/home"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:descendantFocusability="afterDescendants">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/search_query"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:hint="@android:string/search_go"
+                        android:layout_weight="1"
+                        android:saveEnabled="false"
+                        android:singleLine="true"
+                        android:imeOptions="actionSearch"
+                        android:maxLength="100"/>
+
+                    <ImageButton
+                        android:id="@+id/search_btn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="fill_parent"
+                        android:src="@android:drawable/ic_menu_search"/>
+                </LinearLayout>
+
+                <FrameLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1">
+
+                    <GridView
+                        android:id="@+id/videos"
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:numColumns="auto_fit"
+                        android:columnWidth="280dp"
+                        android:stretchMode="columnWidth"
+                        android:verticalSpacing="20dp"
+                        android:horizontalSpacing="20dp"
+                        android:paddingLeft="24dp"
+                        android:paddingRight="24dp"
+                        android:clipToPadding="false"
+                        android:scrollbarStyle="outsideOverlay"
+                        android:clickable="true"
+                        android:choiceMode="none"
+                        tools:listitem="@layout/item_video_noicon"/>
+
+                    <ProgressBar
+                        android:id="@+id/loading"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        tools:visibility="gone"/>
+
+                    <LinearLayout
+                        android:id="@+id/no_popular"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:padding="16dp"
+                        android:background="@drawable/rounded_background"
+                        android:layout_margin="16dp"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+                        <TextView
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/no_popular"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:gravity="center"/>
+                        <TextView
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="@string/no_popular_"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/empty_videos"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:text="@string/no_videos"
+                        android:textSize="18sp"
+                        android:visibility="gone" />
+                </FrameLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/subscriptions"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:orientation="vertical">
+
+                <HorizontalScrollView
+                    android:id="@+id/channels_header"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:fadingEdge="horizontal"
+                    android:fadingEdgeLength="16dip"
+                    android:scrollbars="none"
+                    android:background="@drawable/bg_channels_header"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:id="@+id/channels_strip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingLeft="4dip"
+                        android:paddingRight="4dip"
+                        android:paddingTop="8dip"
+                        android:paddingBottom="6dip" />
+                </HorizontalScrollView>
+
+                <FrameLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1">
+
+                    <ListView
+                        android:id="@+id/subscriptions_list"
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:scrollbarStyle="outsideOverlay"
+                        android:clipToPadding="false"
+                        android:clickable="true"
+                        android:choiceMode="none"
+                        android:visibility="gone" />
+
+                    <ProgressBar
+                        android:id="@+id/subscriptions_loading"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/subscriptions_empty"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:text="@string/subscriptions_empty"
+                        android:textSize="16sp"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/subscriptions_hint"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="@string/subscriptions_hint"
+                        android:textSize="12sp"
+                        android:textColor="#888888"
+                        android:gravity="center" />
+                </FrameLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/me"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:orientation="vertical">
+
+                <ScrollView
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent">
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/me_status"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/not_logged_in"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:gravity="center"
+                            android:paddingBottom="8dp" />
+
+                        <LinearLayout
+                            android:id="@+id/me_channel_row"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:visibility="gone">
+
+                            <ImageView
+                                android:id="@+id/me_channel_icon"
+                                android:layout_width="48dip"
+                                android:layout_height="48dip"
+                                android:scaleType="centerCrop" />
+
+                            <TextView
+                                android:id="@+id/me_channel_title"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginLeft="12dp"
+                                android:layout_marginRight="8dp"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:maxLines="2"
+                                android:ellipsize="end" />
+
+                            <LinearLayout
+                                android:id="@+id/me_channel_loading"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginLeft="12dp"
+                                android:layout_marginRight="8dp"
+                                android:layout_gravity="center_vertical"
+                                android:gravity="center"
+                                android:orientation="horizontal"
+                                android:visibility="gone">
+
+                                <ProgressBar
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center" />
+                            </LinearLayout>
+
+                            <Button
+                                android:id="@+id/btn_me_logout"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/logout" />
+                        </LinearLayout>
+
+                        <Button
+                            android:id="@+id/btn_me_login"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/login" />
+
+                        <TextView
+                            android:id="@+id/me_history_title"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:text="@string/history"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
+
+                        <ProgressBar
+                            android:id="@+id/me_history_loading"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginTop="8dp"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/me_history_empty"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center"
+                            android:text="@string/no_videos"
+                            android:textSize="14sp"
+                            android:visibility="gone" />
+
+                        <HorizontalScrollView
+                            android:id="@+id/me_history_scroll"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:scrollbars="none"
+                            android:visibility="gone">
+
+                            <LinearLayout
+                                android:id="@+id/me_history_strip"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal" />
+                        </HorizontalScrollView>
+                    </LinearLayout>
+                </ScrollView>
+            </LinearLayout>
+        </FrameLayout>
+    </LinearLayout>
+</TabHost>

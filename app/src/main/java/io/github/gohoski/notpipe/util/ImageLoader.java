@@ -36,8 +36,8 @@ public class ImageLoader {
     private static final LinkedList<String> cacheHistory = new LinkedList<String>();
     private static final Hashtable<String, List<ImageRequest>> pendingViews = new Hashtable<String, List<ImageRequest>>();
 
-    private static final int MAX_CACHE_SIZE = 16;
-    private static final long MAX_CACHE_BYTES = 2L * 1024L * 1024L;
+    private static final int MAX_CACHE_SIZE = 32;
+    private static final long MAX_CACHE_BYTES = Math.max(4L * 1024L * 1024L, Runtime.getRuntime().maxMemory() / 6);
     private static final int MAX_THUMB_DIM = 480;
     private static final int MAX_AVATAR_DIM = 96;
     private static long cacheBytes = 0;
@@ -111,6 +111,10 @@ public class ImageLoader {
         if (useCache && memoryCache.containsKey(url)) {
             Bitmap cachedBitmap = memoryCache.get(url);
             if (imageView != null && cachedBitmap != null && !cachedBitmap.isRecycled()) {
+                synchronized (ImageLoader.class) {
+                    cacheHistory.remove(url);
+                    cacheHistory.addLast(url);
+                }
                 imageView.setImageBitmap(cachedBitmap);
             } else if (imageView != null && cachedBitmap != null && cachedBitmap.isRecycled()) {
                 memoryCache.remove(url);

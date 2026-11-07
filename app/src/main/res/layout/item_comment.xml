@@ -16,26 +16,33 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
-        <LinearLayout
+        <TableLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <TextView
-                android:id="@+id/channel_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textStyle="bold"
-                android:textSize="12sp"
-                android:textColor="@android:color/primary_text_dark"
-                tools:text="\@sigma"/>
-            <TextView
-                android:id="@+id/date"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="12sp"
-                android:paddingLeft="5dp"
-                tools:text="1 year ago"/>
-        </LinearLayout>
+            android:shrinkColumns="0">
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/channel_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:textStyle="bold"
+                    android:textSize="12sp"
+                    android:textColor="@android:color/primary_text_dark"
+                    tools:text="\@sigma" />
+                <TextView
+                    android:id="@+id/date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:textSize="12sp"
+                    android:paddingLeft="5dip"
+                    tools:text="1 year ago" />
+            </TableRow>
+        </TableLayout>
         <TextView
             android:id="@+id/content"
             android:layout_width="fill_parent"

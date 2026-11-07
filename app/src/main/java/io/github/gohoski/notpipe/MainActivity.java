@@ -208,20 +208,6 @@ public class MainActivity extends Activity implements InstancesUpdater.OnInstanc
         }
         ensureHomeAdapter();
 
-        listView.setOnScrollListener(new AbsListView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-                if (scrollState == SCROLL_STATE_IDLE) {
-                    if (adapter != null) {
-                        adapter.notifyDataSetChanged();
-                    }
-                }
-            }
-
-            @Override
-            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {}
-        });
-
         try {
             metadata = Manager.getInstance().getMetadata();
         } catch(IllegalStateException ignored) {}

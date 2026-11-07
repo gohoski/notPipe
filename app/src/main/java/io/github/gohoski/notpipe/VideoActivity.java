@@ -601,6 +601,8 @@ public class VideoActivity extends Activity {
     }
 
     private void hideDummyTab() {
+        // The dummy tab is only added on tablets running Android 3.0+ (see setupTabHost); elsewhere the first tab is a real one
+        if (!isTablet() || NotPipe.SDK < 11) return;
         final TabHost tabHost = (TabHost) findViewById(android.R.id.tabhost);
         if (tabHost != null && tabHost.getTabWidget() != null && tabHost.getTabWidget().getChildCount() > 0) {
             tabHost.getTabWidget().post(new Runnable() {

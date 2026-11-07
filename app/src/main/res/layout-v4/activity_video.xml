@@ -82,96 +82,103 @@
                         android:id="@+id/video_meta"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                        android:orientation="vertical"
                         android:paddingLeft="16dp"
                         android:paddingRight="16dp"
-                        android:paddingTop="16dp"
-                        android:gravity="top">
+                        android:paddingTop="16dp">
 
                         <LinearLayout
-                            android:layout_width="0dp"
+                            android:layout_width="fill_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/title"
-                                android:layout_width="fill_parent"
-                                android:layout_height="wrap_content"
-                                android:textStyle="bold"
-                                android:textSize="16sp"
-                                android:textColor="@android:color/primary_text_dark_nodisable"
-                                tools:text="Example Title"/>
-
-                            <TextView
-                                android:id="@+id/views"
-                                android:layout_width="fill_parent"
-                                android:layout_height="wrap_content"
-                                android:textSize="12sp"
-                                tools:text="1356 views   8 days ago"/>
+                            android:orientation="horizontal"
+                            android:gravity="top">
 
                             <LinearLayout
-                                android:id="@+id/channel"
-                                android:layout_width="fill_parent"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:layout_marginTop="5dip"
-                                android:gravity="center_vertical">
-                                <ImageView
-                                    android:id="@+id/channel_thumbnail"
-                                    android:layout_width="40dip"
-                                    android:layout_height="40dip"
-                                    android:scaleType="fitCenter"
-                                    android:layout_marginRight="8dip"
-                                    tools:src="@android:drawable/ic_popup_sync"/>
+                                android:layout_weight="1"
+                                android:orientation="vertical">
 
-                                <TableLayout
-                                    android:layout_width="0dp"
+                                <TextView
+                                    android:id="@+id/title"
+                                    android:layout_width="fill_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:shrinkColumns="0">
-                                    <TableRow
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:gravity="center_vertical">
-                                        <TextView
-                                            android:id="@+id/channel_title"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:singleLine="true"
-                                            android:ellipsize="end"
-                                            android:textColor="@android:color/primary_text_dark"
-                                            tools:text="My channel"/>
-                                        <TextView
-                                            android:id="@+id/subscribers"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:singleLine="true"
-                                            android:textSize="12sp"
-                                            android:paddingLeft="4dp"
-                                            tools:text="1356"/>
-                                    </TableRow>
-                                </TableLayout>
+                                    android:textStyle="bold"
+                                    android:textSize="16sp"
+                                    android:textColor="@android:color/primary_text_dark_nodisable"
+                                    tools:text="Example Title"/>
 
-                                <Button
-                                    android:id="@+id/subscribe"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="fill_parent"
-                                    android:layout_marginLeft="8dip"
-                                    android:text="@string/subscribe"
+                                <TextView
+                                    android:id="@+id/views"
+                                    android:layout_width="fill_parent"
+                                    android:layout_height="wrap_content"
                                     android:textSize="12sp"
-                                    android:visibility="gone"
-                                    tools:visibility="visible"/>
+                                    tools:text="1356 views   8 days ago"/>
                             </LinearLayout>
+
+                            <ImageButton
+                                android:id="@+id/full_screen"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="8dip"
+                                android:src="@drawable/ic_full_screen"
+                                android:visibility="gone"/>
                         </LinearLayout>
 
-                        <ImageButton
-                            android:id="@+id/full_screen"
-                            android:layout_width="wrap_content"
+                        <LinearLayout
+                            android:id="@+id/channel"
+                            android:layout_width="fill_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginLeft="16dp"
-                            android:src="@drawable/ic_full_screen"
-                            android:visibility="gone"/>
+                            android:orientation="horizontal"
+                            android:layout_marginTop="5dip"
+                            android:gravity="center_vertical">
+
+                            <ImageView
+                                android:id="@+id/channel_thumbnail"
+                                android:layout_width="40dip"
+                                android:layout_height="40dip"
+                                android:scaleType="fitCenter"
+                                android:layout_marginRight="8dip"
+                                tools:src="@android:drawable/ic_popup_sync"/>
+
+                            <TableLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:shrinkColumns="0">
+                                <TableRow
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center_vertical">
+                                    <TextView
+                                        android:id="@+id/channel_title"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:singleLine="true"
+                                        android:ellipsize="end"
+                                        android:textColor="@android:color/primary_text_dark"
+                                        tools:text="My channel"/>
+                                    <TextView
+                                        android:id="@+id/subscribers"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:singleLine="true"
+                                        android:textSize="12sp"
+                                        android:paddingLeft="4dp"
+                                        tools:text="1356"/>
+                                </TableRow>
+                            </TableLayout>
+
+                            <Button
+                                android:id="@+id/subscribe"
+                                android:layout_width="wrap_content"
+                                android:layout_height="40dp"
+                                android:layout_marginLeft="8dip"
+                                android:text="@string/subscribe"
+                                android:textSize="12sp"
+                                android:visibility="gone"
+                                tools:visibility="visible"/>
+                        </LinearLayout>
                     </LinearLayout>
 
                     <LinearLayout
