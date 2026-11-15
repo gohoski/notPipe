@@ -132,6 +132,27 @@
                 android:layout_height="wrap_content"
                 android:text="@string/stream_playback_desc"/>
 
+            <Button
+                android:id="@+id/clear_cache_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/clear_video_cache"
+                android:visibility="gone"/>
+
+            <CheckBox
+                android:id="@+id/auto_clear_cache_chk"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/auto_clear_cache"
+                android:visibility="gone"/>
+
+            <TextView
+                android:id="@+id/auto_clear_cache_desc"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/auto_clear_cache_desc"
+                android:visibility="gone"/>
+
             <CheckBox
                 android:id="@+id/async_uri_chk"
                 android:layout_width="fill_parent"

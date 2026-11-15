@@ -63,13 +63,13 @@
     </string-array>
     <string name="video_player_desc">The <b>internal player</b> plays videos directly within the app using the system\'s built-in player. The <b>external player</b> opens the video in a separate app, letting you choose your preferred player (e.g., MX Player). <i>If videos do not play, please install MX Player and switch to the external player. If MX Player isn\'t available or videos are lagging, try using <b>conversion</b> below instead.</i></string>
     <string name="stream_playback">Stream playback</string>
-    <string name="stream_playback_desc">If disabled, videos will be downloaded to the SD card before playback, which sometimes can improve stability.</string>
+    <string name="stream_playback_desc">If disabled, videos will be downloaded to storage before playback, which sometimes can improve stability. The SD card is used when available; otherwise the video is cached in internal storage.</string>
     <string name="instance_exist">Instance already exists</string>
     <string name="incorrect_url">Please enter a correct URL</string>
     <string name="url">Enter URL</string>
     <string name="updating_instances">Updating instances</string>
     <string name="conversion">Conversion</string>
-    <string name="conversion_">Conversion may help if your device does not support H.264 and MX Player is slow or not available. Conversion is available only with yt2009 and YtAPILegacy instances. SD card is required only when stream playback is disabled. <b>Do not enable if videos are playing normally.</b></string>
+    <string name="conversion_">Conversion may help if your device does not support H.264 and MX Player is slow or not available. Conversion is available only with yt2009 and YtAPILegacy instances. <b>Do not enable if videos are playing normally.</b></string>
     <string name="convert_videos">Convert videos</string>
     <string name="video_codec">Video codec</string>
     <string name="setting_footer">notPipe — YouTube client for legacy Android\n▶ github.com/gohoski/notPipe\n▶ t.me/AppDataApps</string>
@@ -81,6 +81,14 @@
     <string name="loading_">(loading)</string>
     <string name="conv_long">Conversion may take a moment. Please wait.</string>
     <string name="cache">cache</string>
+    <string name="clear_video_cache">Clear video cache</string>
+    <string name="auto_clear_cache">Clear old cached videos automatically</string>
+    <string name="auto_clear_cache_desc">Videos older than a day are removed when the app opens. This never runs while a video is playing.</string>
+    <string name="clear_cache_confirm">Delete all cached videos (%s)?</string>
+    <string name="clear_cache_empty">No cached videos found</string>
+    <string name="clear_cache_done">Freed %s</string>
+    <string name="storage_unavailable">Couldn\'t access storage to cache the video</string>
+    <string name="storage_space">There isn\'t enough free space to cache the video</string>
     <string name="sd_card">To continue, please insert an SD card</string>
     <string name="ins_upd">Instances updated successfully</string>
     <string name="subscribers">%s subscribers</string>

@@ -155,7 +155,6 @@ public class VideoActivity extends Activity {
     private boolean authStateLoaded = false;
 
     private int videoBufferTimeout = 60000;
-    private static final String DIR_VIDEOS = "notPipe/videos";
 
     private Handler systemUiHandler = new Handler();
     private Runnable hideSystemUiRunnable = new Runnable() {
@@ -635,10 +634,7 @@ public class VideoActivity extends Activity {
     }
 
     private File getCachedVideoFile(String vId) {
-        File sdCard = Environment.getExternalStorageDirectory();
-        File dir = new File(sdCard, DIR_VIDEOS);
-        if (!dir.exists()) dir.mkdirs();
-        return new File(dir, vId + ".mp4");
+        return VideoStorage.getVideoFile(this, vId);
     }
 
     private void updatePlaybackViaText(String host) {
@@ -935,7 +931,7 @@ public class VideoActivity extends Activity {
 
                         // Determine if we were attempting to play a local cached file
                         boolean isLocalFile = false;
-                        if (videoUrl != null && (videoUrl.startsWith(Environment.getExternalStorageDirectory().getPath()) || videoUrl.startsWith("file://"))) {
+                        if (videoUrl != null && VideoStorage.isCachedVideoPath(context, videoUrl)) {
                             isLocalFile = true;
                         }
 
@@ -1198,7 +1194,7 @@ public class VideoActivity extends Activity {
             setupAuthUI();
         }
         if (videoUrl != null && !config.isUseExternalPlayer()) {
-            if (config.isStreamPlayback() || videoUrl.startsWith(Environment.getExternalStorageDirectory().getPath()) || videoUrl.startsWith("file://")) {
+            if (config.isStreamPlayback() || VideoStorage.isCachedVideoPath(this, videoUrl)) {
                 if (isVideoViewNeedsReload) {
                     showVideoLoadingUI();
 
@@ -2528,7 +2524,7 @@ public class VideoActivity extends Activity {
 
                 android.os.StatFs stat = new android.os.StatFs(downloadDir.getPath());
                 long availableSpace = (long) stat.getBlockSize() * (long) stat.getAvailableBlocks();
-                if (availableSpace < 150L * 1024L * 1024L) {
+                if (availableSpace < VideoStorage.MIN_FREE_BYTES) {
                     isNoSpaceError = true;
                     return null;
                 }
@@ -2915,7 +2911,7 @@ public class VideoActivity extends Activity {
                     videoStream = successInstance[0];
                 }
                 VideoCache.putStream(videoId, resultUrl, requestedQuality, videoStream);
-                if (resultUrl.startsWith(Environment.getExternalStorageDirectory().getPath())) {
+                if (VideoStorage.isCachedVideoPath(context, resultUrl)) {
                     updatePlaybackViaText(getString(R.string.cache));
                     proceedPlay(resultUrl);
                 } else {
@@ -2982,6 +2978,7 @@ public class VideoActivity extends Activity {
     private void launchExternalPlayer(Uri data) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setDataAndType(data, "video/mp4");
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         try {
             startActivity(intent);
             addToHistory();
@@ -2993,7 +2990,8 @@ public class VideoActivity extends Activity {
     }
 
     private void proceedPlay(final String targetUrl) {
-        boolean isLocal = targetUrl.startsWith(Environment.getExternalStorageDirectory().getPath()) || targetUrl.startsWith("file://");
+        String playableUrl = VideoStorage.toPlayableUri(context, targetUrl);
+        boolean isLocal = VideoStorage.isCachedVideoPath(context, targetUrl);
         boolean shouldStream = config.isStreamPlayback() || isLocal;
 
         if (isLocal)
@@ -3005,7 +3003,7 @@ public class VideoActivity extends Activity {
 
         if (config.isUseExternalPlayer()) {
             if (shouldStream) {
-                launchExternalPlayer(Uri.parse(targetUrl));
+                launchExternalPlayer(Uri.parse(playableUrl));
             } else {
                 downloadVideoTask = new DownloadVideoTask();
                 downloadVideoTask.execute(targetUrl);
@@ -3017,7 +3015,7 @@ public class VideoActivity extends Activity {
             if (isActivityStopped) {
                 // Keep the background resolution running, but do not touch the UI/player yet.
                 // Save the URL, and let onResume handle the playback when the user returns.
-                videoUrl = shouldStream ? targetUrl : null;
+                videoUrl = shouldStream ? playableUrl : null;
                 if (!shouldStream) {
                     downloadVideoTask = new DownloadVideoTask();
                     downloadVideoTask.execute(targetUrl);
@@ -3029,9 +3027,9 @@ public class VideoActivity extends Activity {
             attachVideoListeners();
 
             if (shouldStream) {
-                videoUrl = targetUrl;
+                videoUrl = playableUrl;
                 videoView.setVisibility(View.VISIBLE);
-                loadVideoUri(targetUrl);
+                loadVideoUri(playableUrl);
             } else {
                 videoUrl = null;
                 downloadVideoTask = new DownloadVideoTask();
@@ -3042,7 +3040,7 @@ public class VideoActivity extends Activity {
 
     private class DownloadVideoTask extends AsyncTask<String, Integer, File> {
         private TextView progressView;
-        private boolean sdCardNotMounted = false;
+        private boolean storageUnavailable = false;
         private boolean noSpaceError = false;
 
         @Override
@@ -3056,20 +3054,13 @@ public class VideoActivity extends Activity {
         @Override
         protected File doInBackground(String... params) {
             try {
-                if (!Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
-                    sdCardNotMounted = true;
-                    return null;
-                }
-                File sdCard = Environment.getExternalStorageDirectory();
-                android.os.StatFs stat = new android.os.StatFs(sdCard.getPath());
-                long availableSpace = (long) stat.getBlockSize() * (long) stat.getAvailableBlocks();
-                if (availableSpace < 150L * 1024L * 1024L) { // 150 Megabytes
-                    noSpaceError = true;
-                    return null;
-                }
-
                 String downloadUrl = params[0];
-                File videoFile = getCachedVideoFile(videoId);
+                File videoFile = VideoStorage.getDownloadFile(context, videoId);
+                if (videoFile == null) {
+                    storageUnavailable = !VideoStorage.hasWritableStorage(context);
+                    noSpaceError = !storageUnavailable;
+                    return null;
+                }
                 if (!videoFile.exists()) {
                     int timeout = config.isConvertVideos() ? HttpClient.CONVERSION_TIMEOUT : videoBufferTimeout;
                     HttpClient.downloadToFile(downloadUrl, videoFile.getAbsolutePath(), timeout, new HttpClient.DownloadProgressListener() {
@@ -3159,22 +3150,23 @@ public class VideoActivity extends Activity {
             if (isCancelled()) return;
             if (progressView != null) progressView.setVisibility(View.GONE);
 
-            if (sdCardNotMounted) {
+            if (storageUnavailable) {
                 resetVideo(); restoreVideoUI();
-                Toast.makeText(context, R.string.sd_card, Toast.LENGTH_LONG).show();
+                Toast.makeText(context, R.string.storage_unavailable, Toast.LENGTH_LONG).show();
                 return;
-            } if (noSpaceError) {
+            } else if (noSpaceError) {
                 resetVideo(); restoreVideoUI();
-                Toast.makeText(context, R.string.sd_card_space, Toast.LENGTH_LONG).show();
+                Toast.makeText(context, R.string.storage_space, Toast.LENGTH_LONG).show();
                 return;
             }
 
             if (videoFile != null) {
+                String playableUrl = VideoStorage.toPlayableUri(context, videoFile.getAbsolutePath());
                 if (config.isUseExternalPlayer()) {
-                    launchExternalPlayer(Uri.fromFile(videoFile));
+                    launchExternalPlayer(Uri.parse(playableUrl));
                 } else {
                     resetVideo();
-                    videoUrl = Uri.fromFile(videoFile).toString();
+                    videoUrl = playableUrl;
                     videoPlaying = true;
                     if (isActivityStopped) return;
                     applyOpenCoreLayoutFix();

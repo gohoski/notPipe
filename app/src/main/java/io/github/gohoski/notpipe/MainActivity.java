@@ -61,6 +61,8 @@ public class MainActivity extends Activity implements InstancesUpdater.OnInstanc
     private static final String STATE_IS_SEARCH_MODE = "is_search_mode";
     private static final String STATE_IS_RECOMMENDATIONS = "is_recommendations";
     private static final int REQUEST_LOGIN = 1001;
+    private static final long CACHE_CLEAR_INTERVAL = 24L * 60L * 60L * 1000L;
+    private static final long CACHE_MAX_AGE = 24L * 60L * 60L * 1000L;
 
     private VideoAdapter adapter;
     private List<VideoInfo> videos;
@@ -625,6 +627,32 @@ public class MainActivity extends Activity implements InstancesUpdater.OnInstanc
         updateSubscriptionsUI();
         channelsStripHandler.removeCallbacks(channelsStripCheckRunnable);
         channelsStripHandler.post(channelsStripCheckRunnable);
+        autoClearVideoCacheIfDue();
+    }
+
+    /**
+     * Removes cached videos older than a day at most once per day.
+     * Runs only from the main screen, so an active VideoActivity is never affected.
+     */
+    private void autoClearVideoCacheIfDue() {
+        config = ConfigManager.getInstance().getConfig();
+        if (!config.isAutoClearCache()) return;
+
+        long now = System.currentTimeMillis();
+        long last = config.getLastCacheClear();
+        if (last > 0 && last <= now && now - last < CACHE_CLEAR_INTERVAL) return;
+
+        config.setLastCacheClear(now);
+        ConfigManager.getInstance().saveConfig(config);
+
+        final Context appContext = getApplicationContext();
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                VideoStorage.clearOlderThan(appContext, CACHE_MAX_AGE);
+                return null;
+            }
+        }.execute();
     }
 
     /**

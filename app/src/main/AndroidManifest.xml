@@ -13,6 +13,11 @@
         android:label="@string/app_name"
         android:roundIcon="@drawable/main_icon"
         android:theme="@style/AppTheme">
+        <provider
+            android:name=".VideoContentProvider"
+            android:authorities="io.github.gohoski.notpipe.videos"
+            android:exported="false"
+            android:grantUriPermissions="true" />
         <activity
             android:label="@string/app_name"
             android:name="io.github.gohoski.notpipe.MainActivity"

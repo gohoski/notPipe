@@ -3,10 +3,12 @@ package io.github.gohoski.notpipe;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -30,6 +32,9 @@ public class SettingsActivity extends Activity implements InstancesUpdater.OnIns
     private CheckBox fullscreenRotateChk;
     private CheckBox hideShortsRecChk, hideShortsSubsChk;
     private EditText shortLengthEdit;
+    private Button clearCacheButton;
+    private CheckBox autoClearCacheChk;
+    private View autoClearCacheDesc;
     private LinearLayout updateInstancesLayout, convertLayout;
     private EditText instancesUrlEdit;
     private Spinner updateFreqSpinner, playerSpinner, codecSpinner;
@@ -81,6 +86,9 @@ public class SettingsActivity extends Activity implements InstancesUpdater.OnIns
         convertVideosChk = (CheckBox) findViewById(R.id.convert_chk);
         convertLayout = (LinearLayout) findViewById(R.id.codec_layout);
         asyncUriChk = (CheckBox) findViewById(R.id.async_uri_chk);
+        clearCacheButton = (Button) findViewById(R.id.clear_cache_btn);
+        autoClearCacheChk = (CheckBox) findViewById(R.id.auto_clear_cache_chk);
+        autoClearCacheDesc = findViewById(R.id.auto_clear_cache_desc);
         fullscreenRotateChk = (CheckBox) findViewById(R.id.fullscreen_rotate_chk);
         hideShortsRecChk = (CheckBox) findViewById(R.id.hide_shorts_rec_chk);
         hideShortsSubsChk = (CheckBox) findViewById(R.id.hide_shorts_subs_chk);
@@ -100,11 +108,6 @@ public class SettingsActivity extends Activity implements InstancesUpdater.OnIns
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-                        Toast.makeText(context, R.string.sd_card, Toast.LENGTH_LONG).show();
-                        convertVideosChk.setChecked(false);
-                        return;
-                    }
                     convertLayout.setVisibility(View.VISIBLE);
                     setSpinnerSelection(qualitySpinner, "360p");
                     playerSpinner.setSelection(0);
@@ -122,12 +125,8 @@ public class SettingsActivity extends Activity implements InstancesUpdater.OnIns
         streamPlaybackChk.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (!isChecked) {
-                    if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-                        Toast.makeText(context, R.string.sd_card, Toast.LENGTH_LONG).show();
-                        streamPlaybackChk.setChecked(true);
-                    }
-                }
+                // Cache controls only make sense when videos are actually downloaded
+                setCacheControlsVisibility(isChecked ? View.GONE : View.VISIBLE);
             }
         });
 
@@ -137,6 +136,8 @@ public class SettingsActivity extends Activity implements InstancesUpdater.OnIns
         updateFreqSpinner.setSelection(config.getUpdateFrequency());
         playerSpinner.setSelection(config.isUseExternalPlayer() ? 1 : 0);
         streamPlaybackChk.setChecked(config.isStreamPlayback());
+        autoClearCacheChk.setChecked(config.isAutoClearCache());
+        setCacheControlsVisibility(config.isStreamPlayback() ? View.GONE : View.VISIBLE);
         setSpinnerSelection(qualitySpinner, config.getPreferredQuality() + "p");
         convertVideosChk.setChecked(config.isConvertVideos());
         codecSpinner.setSelection(config.getConvertCodec());
@@ -181,6 +182,66 @@ public class SettingsActivity extends Activity implements InstancesUpdater.OnIns
                 new InstancesUpdater(context, SettingsActivity.this).updateInstances();
             }
         });
+        findViewById(R.id.clear_cache_btn).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showClearCacheDialog();
+            }
+        });
+    }
+
+    /**
+     * Confirms and deletes all cached videos from external and internal storage.
+     */
+    private void showClearCacheDialog() {
+        long used = VideoStorage.getUsedBytes(context);
+        if (used <= 0) {
+            Toast.makeText(context, R.string.clear_cache_empty, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        new AlertDialog.Builder(context)
+                .setTitle(R.string.clear_video_cache)
+                .setMessage(getString(R.string.clear_cache_confirm, formatSize(used)))
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        clearVideoCache();
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void clearVideoCache() {
+        new AsyncTask<Void, Void, Long>() {
+            @Override
+            protected Long doInBackground(Void... params) {
+                return VideoStorage.clearAll(context);
+            }
+
+            @Override
+            protected void onPostExecute(Long freed) {
+                long bytes = freed != null ? freed : 0;
+                if (bytes <= 0) {
+                    Toast.makeText(context, R.string.clear_cache_empty, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(context, getString(R.string.clear_cache_done, formatSize(bytes)), Toast.LENGTH_SHORT).show();
+                }
+            }
+        }.execute();
+    }
+
+    private String formatSize(long bytes) {
+        if (bytes >= 1024L * 1024L) {
+            return String.format("%.1f MB", bytes / (1024.0 * 1024.0));
+        }
+        return String.format("%d KB", bytes / 1024L);
+    }
+
+    private void setCacheControlsVisibility(int visibility) {
+        clearCacheButton.setVisibility(visibility);
+        autoClearCacheChk.setVisibility(visibility);
+        autoClearCacheDesc.setVisibility(visibility);
     }
 
     private void saveSettings() {
@@ -196,6 +257,7 @@ public class SettingsActivity extends Activity implements InstancesUpdater.OnIns
         config.setFullscreenRotateLandscape(fullscreenRotateChk.isChecked());
         config.setHideShortsRecommendations(hideShortsRecChk.isChecked());
         config.setHideShortsSubscriptions(hideShortsSubsChk.isChecked());
+        config.setAutoClearCache(autoClearCacheChk.isChecked());
         int shortLength = 90;
         try {
             shortLength = Integer.parseInt(shortLengthEdit.getText().toString().trim());

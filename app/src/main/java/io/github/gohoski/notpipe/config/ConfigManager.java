@@ -36,6 +36,8 @@ public class ConfigManager {
     private static final String KEY_HIDE_SHORTS_RECOMMENDATIONS = "hide_shorts_recommendations";
     private static final String KEY_HIDE_SHORTS_SUBSCRIPTIONS = "hide_shorts_subscriptions";
     private static final String KEY_SHORT_LENGTH_SECONDS = "short_length_seconds";
+    private static final String KEY_AUTO_CLEAR_CACHE = "auto_clear_cache";
+    private static final String KEY_LAST_CACHE_CLEAR = "last_cache_clear";
 
     private static final String SEPARATOR = ";";
 
@@ -98,6 +100,8 @@ public class ConfigManager {
         editor.putBoolean(KEY_HIDE_SHORTS_RECOMMENDATIONS, config.isHideShortsRecommendations());
         editor.putBoolean(KEY_HIDE_SHORTS_SUBSCRIPTIONS, config.isHideShortsSubscriptions());
         editor.putInt(KEY_SHORT_LENGTH_SECONDS, config.getShortLengthSeconds());
+        editor.putBoolean(KEY_AUTO_CLEAR_CACHE, config.isAutoClearCache());
+        editor.putLong(KEY_LAST_CACHE_CLEAR, config.getLastCacheClear());
         String downloadFolder = config.getDownloadFolder();
         if (downloadFolder == null || downloadFolder.trim().length() == 0) {
             downloadFolder = Config.DEFAULT_DOWNLOAD_FOLDER;
@@ -148,6 +152,8 @@ public class ConfigManager {
         config.setHideShortsRecommendations(prefs.getBoolean(KEY_HIDE_SHORTS_RECOMMENDATIONS, true));
         config.setHideShortsSubscriptions(prefs.getBoolean(KEY_HIDE_SHORTS_SUBSCRIPTIONS, true));
         config.setShortLengthSeconds(prefs.getInt(KEY_SHORT_LENGTH_SECONDS, 90));
+        config.setAutoClearCache(prefs.getBoolean(KEY_AUTO_CLEAR_CACHE, false));
+        config.setLastCacheClear(prefs.getLong(KEY_LAST_CACHE_CLEAR, 0L));
 
         String downloadFolder = prefs.getString(KEY_DOWNLOAD_FOLDER, Config.DEFAULT_DOWNLOAD_FOLDER);
         if (downloadFolder != null && downloadFolder.trim().length() > 0) {

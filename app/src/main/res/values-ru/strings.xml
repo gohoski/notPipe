@@ -62,7 +62,7 @@
     <string name="quality_recommend">Для быстрой работы рекомендуется 360p.</string>
     <string name="settings">Настройки</string>
     <string name="stream_playback">Потоковое воспроизведение</string>
-    <string name="stream_playback_desc">Если отключить, то перед воспроизведением видео будут скачиваться на SD-карту, что иногда улучшает стабильность.</string>
+    <string name="stream_playback_desc">Если отключить, то перед воспроизведением видео будут скачиваться в память устройства, что иногда улучшает стабильность. При наличии SD-карты используется она, иначе видео кэшируется во внутренней памяти.</string>
     <string name="update">Обновить</string>
     <string name="update_freq">Частота обновления</string>
     <string name="update_instances_url">Обновлять инстансы с ссылки</string>
@@ -83,7 +83,7 @@
     <string name="instance_exist">Инстанс уже введён</string>
     <string name="url">Введите URL</string>
     <string name="conversion">Конвертация</string>
-    <string name="conversion_">Конвертация поможет, если устройство не поддерживает H.264, а MX Player тормозит или недоступен. Конвертация доступна только с инстансами yt2009 и YtAPILegacy. SD-карта нужна только при отключённом стриминге. <b>Не включайте, если видео работают нормально.</b></string>
+    <string name="conversion_">Конвертация поможет, если устройство не поддерживает H.264, а MX Player тормозит или недоступен. Конвертация доступна только с инстансами yt2009 и YtAPILegacy. <b>Не включайте, если видео работают нормально.</b></string>
     <string name="convert_videos">Конвертировать видео</string>
     <string name="updating_instances">Обновление инстансов</string>
     <string name="video_codec">Видеокодек</string>
@@ -96,6 +96,14 @@
     <string name="about_">Рабочий клиент YouTube для устаревших версий Android. Сделано с ♡ и расчётом на долговечность.\n▶ github.com/gohoski/notPipe\n▶ t.me/AppDataApps\n\nРаспространяется под лицензией WTFPL. Подробности на www.wtfpl.net.\nБиблиотека NNJSON, используемая в этом проекте, распространяется под лицензией MIT, текст которой приведён ниже.</string>
     <string name="conv_long">Конвертация может занять некоторое время. Пожалуйста, подождите.</string>
     <string name="cache">кэш</string>
+    <string name="clear_video_cache">Очистить кэш видео</string>
+    <string name="auto_clear_cache">Автоматически очищать старый кэш видео</string>
+    <string name="auto_clear_cache_desc">Видео старше суток удаляются при открытии приложения. Очистка никогда не выполняется во время воспроизведения.</string>
+    <string name="clear_cache_confirm">Удалить все кэшированные видео (%s)?</string>
+    <string name="clear_cache_empty">Кэшированных видео не найдено</string>
+    <string name="clear_cache_done">Освобождено %s</string>
+    <string name="storage_unavailable">Не удалось получить доступ к хранилищу для кэширования видео</string>
+    <string name="storage_space">Недостаточно свободного места для кэширования видео</string>
     <string name="sd_card">Чтобы продолжить, вставьте SD-карту</string>
     <string name="channel">Канал</string>
     <string name="download">Скачать</string>
