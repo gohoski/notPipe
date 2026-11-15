@@ -9,27 +9,47 @@ on:
       - '**'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: Build debug APK
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
+
+      - name: Cache Android SDK (API 25)
+        id: cache-android-sdk
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/android-sdk
+          key: ${{ runner.os }}-android-sdk-25-25.0.0-v1
 
       - name: Install SDK platform 25 & build-tools 25.0.0
+        if: steps.cache-android-sdk.outputs.cache-hit != 'true'
         run: |
-          SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
-          yes | "$SDKMANAGER" --sdk_root="$RUNNER_TEMP/android-sdk" --licenses > /dev/null 2>&1 || true
-          "$SDKMANAGER" --sdk_root="$RUNNER_TEMP/android-sdk" "platforms;android-25" "build-tools;25.0.0"
+          SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --sdk_root="${{ runner.temp }}/android-sdk" --licenses > /dev/null 2>&1 || true
+          "$SDKMANAGER" --sdk_root="${{ runner.temp }}/android-sdk" "platforms;android-25" "build-tools;25.0.0"
 
       - name: Set up JDK 8 (for Gradle build)
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           java-version: '8'
           distribution: 'temurin'
-          cache: 'gradle'
+          cache-jdk: true
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -39,9 +59,17 @@ jobs:
           ANDROID_HOME: ${{ runner.temp }}/android-sdk
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
+      - name: Find built APK
+        id: find-apk
+        run: |
+          APK=$(find app/build/outputs/apk -maxdepth 2 -name "*.apk" ! -name "*-unaligned.apk" | head -n 1)
+          test -n "$APK"
+          echo "apk-path=$APK" >> "$GITHUB_OUTPUT"
+
       - name: Upload APK artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
-          name: notPipe-debug-apk
-          path: app/build/outputs/apk/*.apk
+          path: ${{ steps.find-apk.outputs.apk-path }}
+          archive: false
+          if-no-files-found: error
           retention-days: 30

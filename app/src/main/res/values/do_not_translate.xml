@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">notPipe</string>
+    <string name="yt2009_url_hint" translatable="false">http://example.com:3759</string>
+    <string name="instances_url_hint" translatable="false">http://144.31.189.129/notPipe.json</string>
     <string-array name="qualities">
         <item>360p</item>
         <item>480p</item>
@@ -8,7 +10,8 @@
         <item>1080p</item>
     </string-array>
     <string-array name="codecs">
-        <item>MPEG-4 Visual</item>
+        <item>MPEG-4 Visual (270p)</item>
+        <item>MPEG-4 Visual (360p)</item>
         <item>H.263</item>
     </string-array>
 </resources>

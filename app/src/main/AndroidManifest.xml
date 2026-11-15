@@ -13,6 +13,11 @@
         android:label="@string/app_name"
         android:roundIcon="@drawable/main_icon"
         android:theme="@style/AppTheme">
+        <provider
+            android:name=".VideoContentProvider"
+            android:authorities="io.github.gohoski.notpipe.videos"
+            android:exported="false"
+            android:grantUriPermissions="true" />
         <activity
             android:label="@string/app_name"
             android:name="io.github.gohoski.notpipe.MainActivity"
@@ -49,5 +54,8 @@
         </activity>
         <activity android:name=".ChannelActivity"
             android:label="@string/channel" />
+        <activity android:name=".LoginActivity"
+            android:label="@string/login"
+            android:configChanges="keyboardHidden|orientation" />
     </application>
 </manifest>

@@ -3,6 +3,10 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     xmlns:tools="http://schemas.android.com/tools">
+    <!-- Separate layout for Android 1.5 due to small Dalvik stack size.
+        (If we just use the XML from layout-v4, it will crash on Android 1.5.)
+        layout-v4 needs to be updated as well because of this -->
+
     <ProgressBar
         android:id="@+id/loading"
         android:layout_width="wrap_content"
@@ -114,19 +118,44 @@
                                 android:scaleType="fitCenter"
                                 android:layout_marginRight="8dip"
                                 tools:src="@android:drawable/ic_popup_sync"/>
-                            <TextView
-                                android:id="@+id/channel_title"
-                                android:layout_width="wrap_content"
+
+                            <TableLayout
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:textColor="@android:color/primary_text_dark"
-                                tools:text="My channel"/>
-                            <TextView
-                                android:id="@+id/subscribers"
+                                android:layout_weight="1"
+                                android:shrinkColumns="0">
+                                <TableRow
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center_vertical">
+                                    <TextView
+                                        android:id="@+id/channel_title"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:singleLine="true"
+                                        android:ellipsize="end"
+                                        android:textColor="@android:color/primary_text_dark"
+                                        tools:text="My channel"/>
+                                    <TextView
+                                        android:id="@+id/subscribers"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:singleLine="true"
+                                        android:textSize="12sp"
+                                        android:paddingLeft="4dp"
+                                        tools:text="1356"/>
+                                </TableRow>
+                            </TableLayout>
+
+                            <Button
+                                android:id="@+id/subscribe"
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
+                                android:layout_height="fill_parent"
+                                android:layout_marginLeft="8dip"
+                                android:text="@string/subscribe"
                                 android:textSize="12sp"
-                                android:paddingLeft="4dp"
-                                tools:text="1356"/>
+                                android:visibility="gone"
+                                tools:visibility="visible"/>
                         </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
@@ -240,7 +269,8 @@
                                     android:layout_width="fill_parent"
                                     android:layout_height="wrap_content"
                                     android:orientation="vertical"
-                                    android:paddingLeft="15dp" />
+                                    android:paddingLeft="15dp"
+                                    android:paddingRight="15dp" />
                             </LinearLayout>
                         </FrameLayout>
                     </LinearLayout>

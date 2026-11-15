@@ -42,7 +42,7 @@
                     android:id="@+id/instances_url"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:hint="http://144.31.189.129/notPipe.json"
+                    android:hint="@string/instances_url_hint"
                     android:inputType="textUri"
                     android:singleLine="true"/>
 
@@ -82,11 +82,19 @@
                 </LinearLayout>
             </LinearLayout>
 
+            <Button
+                android:id="@+id/show_instances_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/show_instance_list"
+                android:layout_marginTop="16dp"/>
+
             <LinearLayout
                 android:id="@+id/apiInstancesContainer"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"/>
+                android:orientation="vertical"
+                android:visibility="gone"/>
 
             <TextView
                 android:layout_width="fill_parent"
@@ -94,7 +102,7 @@
                 android:text="@string/playback"
                 android:textStyle="bold"
                 android:textSize="20sp"
-                android:paddingTop="24dp"
+                android:paddingTop="20dp"
                 android:textColor="@android:color/primary_text_dark"/>
 
             <LinearLayout
@@ -124,12 +132,34 @@
                 android:id="@+id/stream_playback_chk"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:checked="true"
                 android:text="@string/stream_playback"/>
 
             <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/stream_playback_desc"/>
+
+            <Button
+                android:id="@+id/clear_cache_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/clear_video_cache"
+                android:visibility="gone"/>
+
+            <CheckBox
+                android:id="@+id/auto_clear_cache_chk"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/auto_clear_cache"
+                android:visibility="gone"/>
+
+            <TextView
+                android:id="@+id/auto_clear_cache_desc"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/auto_clear_cache_desc"
+                android:visibility="gone"/>
 
             <CheckBox
                 android:id="@+id/async_uri_chk"
@@ -220,6 +250,45 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/force_landscape"/>
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/hide_shorts"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:paddingTop="24dp"
+                android:textColor="@android:color/primary_text_dark"/>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/hide_shorts_length"/>
+                <EditText
+                    android:id="@+id/short_length_edit"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:singleLine="true"/>
+            </LinearLayout>
+
+            <CheckBox
+                android:id="@+id/hide_shorts_rec_chk"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/hide_shorts_recommendations"/>
+
+            <CheckBox
+                android:id="@+id/hide_shorts_subs_chk"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/hide_shorts_subscriptions"/>
 
             <TextView
                 android:layout_width="fill_parent"

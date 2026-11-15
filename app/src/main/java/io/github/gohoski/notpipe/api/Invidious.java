@@ -93,7 +93,7 @@ class Invidious implements Metadata, VideoStream {
         try {
             String error = json.getString("error");
             Log.e("Invidious", error);
-            if (!(error.contains("bot") || error.contains("protect") || error.contains("page") || error.contains("Companion")))
+            if (!Utils.isYouTubeBlockingError(error))
                 throw new ContentUnavailableException(error);
         } catch (JSONException ignored) {}
         JSONArray arr = json.getArray("recommendedVideos");
@@ -108,7 +108,7 @@ class Invidious implements Metadata, VideoStream {
             }
             related.add(new VideoInfo(j.getString("videoId"), j.getString("title"),
                     Utils.parseUrl(baseUrl,j.getArray("videoThumbnails").getObject(VIDEO_THUMB).getString("url")),
-                    j.getString("author"), "", j.getString("authorId"), Utils.formatDuration(j.getInt("lengthSeconds")),
+                    j.getString("author"), null, j.getString("authorId"), Utils.formatDuration(j.getInt("lengthSeconds")),
                     Utils.parseTextCount(j.getString("viewCountText")), published));
         }
         return new Video(id, json.getString("title"),
@@ -129,20 +129,22 @@ class Invidious implements Metadata, VideoStream {
     }
 
     @Override public List<Comment> getComments(String id) throws IOException {
-        try {
-            HttpRequest req = new HttpRequest(baseUrl, "/api/v1/comments/"+id);
-            JSONArray arr = JSON.getObject(HttpClient.executeToString(req)).getArray("comments");
-            List<Comment> comments = new ArrayList<Comment>();
-            for (int i = 0; i < arr.size(); i++) {
-                JSONObject j = arr.getObject(i);
-                comments.add(new Comment(j.getString("author"), Utils.parseUrl(baseUrl + "/ggpht", j.getArray("authorThumbnails").getObject(0).getString("url")),
-                        j.getString("content"), new Date(j.getLong("published") * 1000L), j.getString("authorId")));
+        HttpRequest req = new HttpRequest(baseUrl, "/api/v1/comments/"+id);
+        JSONArray arr = JSON.getObject(HttpClient.executeToString(req)).getArray("comments");
+        List<Comment> comments = new ArrayList<Comment>();
+        for (int i = 0; i < arr.size(); i++) {
+            JSONObject j = arr.getObject(i);
+            String thumbnail; try {
+                thumbnail = Utils.parseUrl(baseUrl + "/ggpht", j.getString("authorThumbnail"));
+            } catch (JSONException ignored) {
+                try {
+                    thumbnail = Utils.parseUrl(baseUrl + "/ggpht", j.getArray("authorThumbnails").getObject(0).getString("url"));
+                } catch(Exception ignored2) {thumbnail = null;}
             }
-            return comments;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ArrayList<Comment>();
+            comments.add(new Comment(j.getString("author"), thumbnail,
+                    j.getString("content"), new Date(j.getLong("published") * 1000L), j.getString("authorId")));
         }
+        return comments;
     }
 
     @Override public List<VideoInfo> getRelated(String id) throws IOException {
@@ -161,7 +163,7 @@ class Invidious implements Metadata, VideoStream {
             }
             related.add(new VideoInfo(j.getString("videoId"), j.getString("title"),
                     Utils.parseUrl(baseUrl,j.getArray("videoThumbnails").getObject(VIDEO_THUMB).getString("url")),
-                    j.getString("author"), "", j.getString("authorId"), Utils.formatDuration(j.getInt("lengthSeconds")),
+                    j.getString("author"), null, j.getString("authorId"), Utils.formatDuration(j.getInt("lengthSeconds")),
                     Utils.parseTextCount(j.getString("viewCountText")), published));
         }
         return related;
@@ -200,8 +202,13 @@ class Invidious implements Metadata, VideoStream {
 
     @Override
     public String getChannelIcon(String id) throws IOException {
-        HttpRequest req = new HttpRequest(baseUrl, "/api/v1/channels/"+id);
-        return Utils.parseUrl(baseUrl + "/ggpht", JSON.getObject(HttpClient.executeToString(req)).getArray("authorThumbnails").getObject(AUTHOR_THUMB).getString("url"));
+        if (id.startsWith("UC")) {
+            HttpRequest req = new HttpRequest(baseUrl, "/api/v1/channels/" + id);
+            return Utils.parseUrl(baseUrl + "/ggpht", JSON.getObject(HttpClient.executeToString(req)).getArray("authorThumbnails").getObject(AUTHOR_THUMB).getString("url"));
+        } else {
+            HttpRequest req = new HttpRequest.Builder(baseUrl, "/api/v1/search").addParam("q", id).addParam("type", "channel").build();
+            return Utils.parseUrl(baseUrl + "/ggpht", JSON.getArray(HttpClient.executeToString(req)).getObject(0).getArray("authorThumbnails").getObject(AUTHOR_THUMB).getString("url"));
+        }
     }
 
     @Override
@@ -209,13 +216,24 @@ class Invidious implements Metadata, VideoStream {
         HttpRequest req = new HttpRequest.Builder(baseUrl, "/api/v1/channels/"+id + "/videos")
                 .addParam("sort_by", sort == 1 ? "popular" : "newest").build();
         JSONObject json = JSON.getObject(HttpClient.executeToString(req));
+        try {
+            String error = json.getString("error");
+            if (error != null && error.length() > 0 && !Utils.isYouTubeBlockingError(error))
+                throw new ContentUnavailableException(error);
+        } catch (JSONException ignored) {}
         List<VideoInfo> videos = parseChannelVideos(json.getArray("videos"));
         if (videos.isEmpty()) {
             if (sort == 1) // At this stage, we can't get popular channel videos
                 return videos;
             // If the instance can't parse videos from the channel page, we'll use channel playlist instead
             req = new HttpRequest(baseUrl, "/api/v1/playlists/UU" + id.substring(2));
-            JSONArray arr = JSON.getObject(HttpClient.executeToString(req)).getArray("videos");
+            JSONObject pjson = JSON.getObject(HttpClient.executeToString(req));
+            try {
+                String error = pjson.getString("error");
+                if (error != null && error.length() > 0 && !Utils.isYouTubeBlockingError(error))
+                    throw new ContentUnavailableException(error);
+            } catch (JSONException ignored) {}
+            JSONArray arr = pjson.getArray("videos");
             for (int i = 0; i < arr.size(); i++) {
                 JSONObject j = arr.getObject(i);
                 videos.add(new VideoInfo(j.getString("videoId"), j.getString("title"),

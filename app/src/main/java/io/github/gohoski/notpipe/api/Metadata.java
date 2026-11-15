@@ -29,11 +29,13 @@ public interface Metadata {
 
     /** This method resolves both @usernames and UC channel IDs! */
     Channel getChannel(String id) throws IOException;
+    /** This method resolves both @usernames and UC channel IDs! */
     String getChannelIcon(String id) throws IOException;
     /**
+     * Method resolves only UC ID
      * If the channel videos endpoint doesn't exist or is unreliable, you can fallback to using channel playlist
      * (`"UU" + id.substring(2)`)
-     * If Metadata.getChannelVideos fails to retrieve videos, please use ChannelApi
+     * If Metadata.getChannelVideos fails to retrieve videos, ChannelApi instance is used
      * @param id Channel ID
      * @param sort 0 = Latest, 1 = Popular
      */

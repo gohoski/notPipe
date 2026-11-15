@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="160dip"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_marginRight="8dip"
+    android:padding="4dip"
+    android:clickable="true"
+    android:background="@android:drawable/list_selector_background"
+    android:descendantFocusability="blocksDescendants">
+
+    <FrameLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+        <io.github.gohoski.notpipe.ui.AspectRatioImageView
+            android:id="@+id/video_thumbnail"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:scaleType="centerCrop"
+            tools:src="@android:color/white" />
+        <TextView
+            android:id="@+id/duration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:layout_margin="5dip"
+            android:background="#AA000000"
+            android:padding="3dip"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:text="00:00"/>
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/video_title"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dip"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:maxLines="2"
+        android:ellipsize="end"
+        tools:text="Example title" />
+
+    <TextView
+        android:id="@+id/channel_title"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textSize="11sp"
+        tools:text="Channel" />
+</LinearLayout>

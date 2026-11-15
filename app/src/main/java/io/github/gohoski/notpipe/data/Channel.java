@@ -2,21 +2,21 @@ package io.github.gohoski.notpipe.data;
 
 import java.util.List;
 
+import io.github.gohoski.notpipe.Utils;
+
 /**
  * Created by Gleb on 12.03.2026.
  */
 
-public class Channel {
-    public final String id, title, thumbnail, banner, description;
+public class Channel extends ChannelInfo {
+    public final String banner, description;
     public final int subscriberCount;
     public final List<VideoInfo> videos;
 
     public Channel(String id, String title, String thumbnail, String banner, String description, int subscriberCount, List<VideoInfo> videos) {
-        this.id = id;
-        this.title = title;
-        this.thumbnail = thumbnail;
+        super(id, title, thumbnail);
         this.banner = banner;
-        this.description = description;
+        this.description = Utils.stripEmoji(description);
         this.subscriberCount = subscriberCount;
         this.videos = videos;
     }
