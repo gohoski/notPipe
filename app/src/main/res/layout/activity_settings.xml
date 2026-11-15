@@ -82,11 +82,19 @@
                 </LinearLayout>
             </LinearLayout>
 
+            <Button
+                android:id="@+id/show_instances_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/show_instance_list"
+                android:layout_marginTop="16dp"/>
+
             <LinearLayout
                 android:id="@+id/apiInstancesContainer"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"/>
+                android:orientation="vertical"
+                android:visibility="gone"/>
 
             <TextView
                 android:layout_width="fill_parent"
@@ -94,7 +102,7 @@
                 android:text="@string/playback"
                 android:textStyle="bold"
                 android:textSize="20sp"
-                android:paddingTop="24dp"
+                android:paddingTop="20dp"
                 android:textColor="@android:color/primary_text_dark"/>
 
             <LinearLayout

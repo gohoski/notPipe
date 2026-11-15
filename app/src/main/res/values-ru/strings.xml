@@ -197,4 +197,5 @@
     <string name="instance_connect_failed">Не удалось подключиться к этому инстансу.</string>
     <string name="fetch_video_url_failed">Не удалось получить ссылку на видео</string>
     <string name="download_failed_retries">Загрузка не удалась после нескольких попыток.</string>
+    <string name="show_instance_list">Показать список инстансов</string>
 </resources>

@@ -28,6 +28,7 @@ import io.github.gohoski.notpipe.util.InstancesUpdater;
  */
 public class SettingsActivity extends Activity implements InstancesUpdater.OnInstancesUpdatedListener {
     private LinearLayout apiInstancesContainer;
+    private Button showInstancesButton;
     private CheckBox updateInstancesChk, streamPlaybackChk, convertVideosChk, asyncUriChk;
     private CheckBox fullscreenRotateChk;
     private CheckBox hideShortsRecChk, hideShortsSubsChk;
@@ -59,6 +60,7 @@ public class SettingsActivity extends Activity implements InstancesUpdater.OnIns
         config = configManager.getConfig();
 
         apiInstancesContainer = (LinearLayout) findViewById(R.id.apiInstancesContainer);
+        showInstancesButton = (Button) findViewById(R.id.show_instances_btn);
         updateInstancesChk = (CheckBox) findViewById(R.id.update_chk);
         updateInstancesLayout = (LinearLayout) findViewById(R.id.update_instances);
         instancesUrlEdit = (EditText) findViewById(R.id.instances_url);
@@ -159,6 +161,14 @@ public class SettingsActivity extends Activity implements InstancesUpdater.OnIns
         apiInstancesContainer.addView(pipedSection);
         apiInstancesContainer.addView(typetypeSection);
         apiInstancesContainer.addView(ytApiLegacySection);
+
+        showInstancesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showInstancesButton.setVisibility(View.GONE);
+                apiInstancesContainer.setVisibility(View.VISIBLE);
+            }
+        });
 
         findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {
             @Override

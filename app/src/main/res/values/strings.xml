@@ -44,6 +44,7 @@
     <string name="settings">Settings</string>
     <string name="about">About</string>
     <string name="instances">Instances</string>
+    <string name="show_instance_list">Show instance list</string>
     <string name="playback">Playback</string>
     <string name="video_quality">Video quality</string>
     <string name="update_instances_url">Update instances from URL</string>
