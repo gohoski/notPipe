@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Created by Gleb on 29.01.2026
@@ -34,7 +35,7 @@ import java.util.concurrent.Executors;
 public class ImageLoader {
     private static final Hashtable<String, Bitmap> memoryCache = new Hashtable<String, Bitmap>();
     private static final LinkedList<String> cacheHistory = new LinkedList<String>();
-    private static final Hashtable<String, List<ImageRequest>> pendingViews = new Hashtable<String, List<ImageRequest>>();
+    private static final Hashtable<String, ImageTask> pendingTasks = new Hashtable<String, ImageTask>();
 
     private static final int MAX_CACHE_SIZE = 32;
     private static final long MAX_CACHE_BYTES = Math.max(4L * 1024L * 1024L, Runtime.getRuntime().maxMemory() / 6);
@@ -59,6 +60,183 @@ public class ImageLoader {
 
         public ImageView getView() {
             return viewRef != null ? (ImageView) viewRef.get() : null;
+        }
+
+        boolean isDeadOrMatches(ImageView target) {
+            if (viewRef == null) {
+                return false;
+            }
+            ImageView view = (ImageView) viewRef.get();
+            return view == null || view == target;
+        }
+    }
+
+    private static class ImageTask implements Runnable {
+        final String url;
+        final boolean useCache;
+        final int maxDim;
+        final List<ImageRequest> requests = new ArrayList<ImageRequest>();
+        volatile boolean cancelled = false;
+        Future<?> future;
+
+        ImageTask(String url, boolean useCache, int maxDim) {
+            this.url = url;
+            this.useCache = useCache;
+            this.maxDim = maxDim;
+        }
+
+        @Override
+        public void run() {
+            // Clear any stale interrupt flag left on the pooled thread by a prior cancelled task
+            Thread.interrupted();
+
+            if (cancelled) {
+                removeTaskIfCurrent();
+                return;
+            }
+
+            final int MAX_RETRIES = 2;
+            byte[] data = null;
+
+            for (int attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+                if (cancelled) {
+                    removeTaskIfCurrent();
+                    return;
+                }
+
+                HttpURLConnection conn = null;
+                InputStream is = null;
+                ByteArrayOutputStream bos = null;
+                try {
+                    URL aURL = new URL(url);
+                    conn = (HttpURLConnection) aURL.openConnection();
+                    conn.setConnectTimeout(5000);
+                    conn.setReadTimeout(10000);
+                    conn.connect();
+                    is = conn.getInputStream();
+                    bos = new ByteArrayOutputStream(32 * 1024);
+                    byte[] buf = new byte[8192];
+                    int n;
+                    while ((n = is.read(buf)) != -1) {
+                        if (cancelled) {
+                            removeTaskIfCurrent();
+                            return;
+                        }
+                        bos.write(buf, 0, n);
+                    }
+                    data = bos.toByteArray();
+                    break;
+                } catch (java.net.SocketTimeoutException e) {
+                    Log.w("ImageLoader", "Timeout on attempt " + (attempt + 1) + " for " + url);
+                    if (cancelled) {
+                        removeTaskIfCurrent();
+                        return;
+                    }
+                    if (attempt == MAX_RETRIES) {
+                        Log.e("ImageLoader", "Final attempt failed. Giving up.");
+                    } else {
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException ie) {
+                            if (cancelled) {
+                                removeTaskIfCurrent();
+                                return;
+                            }
+                        }
+                    }
+                } catch (OutOfMemoryError e) {
+                    Log.e("ImageLoader", "OutOfMemoryError downloading " + url + ", freeing cache");
+                    freeOldestHalf();
+                    if (getCacheSize() == 0 || cancelled) break;
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ie) {
+                        if (cancelled) {
+                            removeTaskIfCurrent();
+                            return;
+                        }
+                    }
+                    if (attempt == MAX_RETRIES) break;
+                } catch (Exception e) {
+                    Log.e("ImageLoader", "Download Error: " + e.getMessage());
+                    break;
+                } finally {
+                    if (is != null) {
+                        try { is.close(); } catch (Exception ignored) {}
+                    }
+                    if (bos != null) {
+                        try { bos.close(); } catch (Exception ignored) {}
+                    }
+                    if (conn != null) {
+                        conn.disconnect();
+                    }
+                }
+            }
+
+            if (cancelled) {
+                removeTaskIfCurrent();
+                return;
+            }
+
+            Bitmap bmp = null;
+            if (data != null) {
+                bmp = decodeSampledWithRetry(data, url, maxDim);
+                data = null;
+            }
+
+            if (cancelled) {
+                removeTaskIfCurrent();
+                return;
+            }
+
+            final Bitmap finalBmp = bmp;
+            uiHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    List<ImageRequest> pendingList;
+                    synchronized (ImageLoader.class) {
+                        if (pendingTasks.get(url) == ImageTask.this) {
+                            pendingTasks.remove(url);
+                        }
+                        if (cancelled) {
+                            return;
+                        }
+                        pendingList = new ArrayList<ImageRequest>(requests);
+                    }
+
+                    if (finalBmp != null) {
+                        if (useCache && !finalBmp.isRecycled()) {
+                            putInCache(url, finalBmp);
+                        }
+
+                        for (int i = 0; i < pendingList.size(); i++) {
+                            ImageRequest req = pendingList.get(i);
+                            ImageView view = req.getView();
+                            if (view != null && !finalBmp.isRecycled()) {
+                                String currentTag = (String) view.getTag();
+                                if (url.equals(currentTag)) {
+                                    view.setImageBitmap(finalBmp);
+                                }
+                            }
+                        }
+                    } else {
+                        for (int i = 0; i < pendingList.size(); i++) {
+                            ImageRequest req = pendingList.get(i);
+                            if (req.callback != null) {
+                                req.callback.onFail();
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        private void removeTaskIfCurrent() {
+            synchronized (ImageLoader.class) {
+                if (pendingTasks.get(url) == ImageTask.this) {
+                    pendingTasks.remove(url);
+                }
+            }
         }
     }
 
@@ -110,26 +288,32 @@ public class ImageLoader {
         }
         if (useCache && memoryCache.containsKey(url)) {
             Bitmap cachedBitmap = memoryCache.get(url);
-            if (imageView != null && cachedBitmap != null && !cachedBitmap.isRecycled()) {
-                synchronized (ImageLoader.class) {
-                    cacheHistory.remove(url);
-                    cacheHistory.addLast(url);
-                }
-                imageView.setImageBitmap(cachedBitmap);
-            } else if (imageView != null && cachedBitmap != null && cachedBitmap.isRecycled()) {
-                memoryCache.remove(url);
+            if (cachedBitmap != null && !cachedBitmap.isRecycled()) {
                 cacheHistory.remove(url);
+                cacheHistory.addLast(url);
+                if (imageView != null) {
+                    imageView.setImageBitmap(cachedBitmap);
+                }
+                return;
+            } else {
+                Bitmap removed = memoryCache.remove(url);
+                cacheHistory.remove(url);
+                if (removed != null) {
+                    cacheBytes = Math.max(0, cacheBytes - bitmapSize(removed));
+                }
             }
+        }
+
+        ImageTask existing = pendingTasks.get(url);
+        if (existing != null && !existing.cancelled) {
+            existing.requests.add(new ImageRequest(imageView, callback));
             return;
         }
-        if (pendingViews.containsKey(url)) {
-            pendingViews.get(url).add(new ImageRequest(imageView, callback));
-            return;
-        }
-        final List<ImageRequest> views = new ArrayList<ImageRequest>();
-        views.add(new ImageRequest(imageView, callback));
-        pendingViews.put(url, views);
-        executor.execute(new ImageLoadRunnable(url, useCache, maxDim));
+
+        ImageTask task = new ImageTask(url, useCache, maxDim);
+        task.requests.add(new ImageRequest(imageView, callback));
+        pendingTasks.put(url, task);
+        task.future = executor.submit(task);
     }
 
     /**
@@ -148,114 +332,6 @@ public class ImageLoader {
      */
     static void loadAvatar(final String url, final ImageView imageView, final ImageLoaderCallback callback) {
         loadImage(url, imageView, true, callback, MAX_AVATAR_DIM);
-    }
-
-    private static class ImageLoadRunnable implements Runnable {
-        private final String url;
-        private final boolean useCache;
-        private final int maxDim;
-
-        ImageLoadRunnable(String url, boolean useCache, int maxDim) {
-            this.url = url;
-            this.useCache = useCache;
-            this.maxDim = maxDim;
-        }
-
-        @Override
-        public void run() {
-            final int MAX_RETRIES = 2;
-            byte[] data = null;
-
-            for (int attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-                HttpURLConnection conn = null;
-                InputStream is = null;
-                ByteArrayOutputStream bos = null;
-                try {
-                    URL aURL = new URL(url);
-                    conn = (HttpURLConnection) aURL.openConnection();
-                    conn.setConnectTimeout(5000);
-                    conn.setReadTimeout(10000);
-                    conn.connect();
-                    is = conn.getInputStream();
-                    bos = new ByteArrayOutputStream(32 * 1024);
-                    byte[] buf = new byte[8192];
-                    int n;
-                    while ((n = is.read(buf)) != -1) {
-                        bos.write(buf, 0, n);
-                    }
-                    data = bos.toByteArray();
-                    break;
-                } catch (java.net.SocketTimeoutException e) {
-                    Log.w("ImageLoader", "Timeout on attempt " + (attempt + 1) + " for " + url);
-                    if (attempt == MAX_RETRIES) {
-                        Log.e("ImageLoader", "Final attempt failed. Giving up.");
-                    } else {
-                        try { Thread.sleep(500); } catch (InterruptedException ignored) {}
-                    }
-                } catch (OutOfMemoryError e) {
-                    Log.e("ImageLoader", "OutOfMemoryError downloading " + url + ", freeing cache");
-                    freeOldestHalf();
-                    if (getCacheSize() == 0) break;
-                    try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
-                    if (attempt == MAX_RETRIES) break;
-                } catch (Exception e) {
-                    Log.e("ImageLoader", "Download Error: " + e.getMessage());
-                    break;
-                } finally {
-                    if (is != null) {
-                        try { is.close(); } catch (Exception ignored) {}
-                    }
-                    if (bos != null) {
-                        try { bos.close(); } catch (Exception ignored) {}
-                    }
-                    if (conn != null) {
-                        conn.disconnect();
-                    }
-                }
-            }
-            Bitmap bmp = null;
-            if (data != null) {
-                bmp = decodeSampledWithRetry(data, url, maxDim);
-                data = null;
-            }
-            final Bitmap finalBmp = bmp;
-            uiHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    List<ImageRequest> pendingList;
-                    synchronized (ImageLoader.class) {
-                        List<ImageRequest> stored = pendingViews.get(url);
-                        if (stored == null) {
-                            return;
-                        }
-                        pendingList = new ArrayList<ImageRequest>(stored);
-                        pendingViews.remove(url);
-                    }
-
-                    if (finalBmp != null) {
-                        if (useCache && !finalBmp.isRecycled()) {
-                            putInCache(url, finalBmp);
-                        }
-
-                        for (ImageRequest req : pendingList) {
-                            ImageView view = req.getView();
-                            if (view != null && !finalBmp.isRecycled()) {
-                                String currentTag = (String) view.getTag();
-                                if (url.equals(currentTag)) {
-                                    view.setImageBitmap(finalBmp);
-                                }
-                            }
-                        }
-                    } else {
-                        for (ImageRequest req : pendingList) {
-                            if (req.callback != null) {
-                                req.callback.onFail();
-                            }
-                        }
-                    }
-                }
-            });
-        }
     }
 
     /**
@@ -328,9 +404,7 @@ public class ImageLoader {
 
     /**
      * Stores a bitmap in the shared cache, evicting the oldest entries
-     * while the cache exceeds its count or byte budget. Evicted bitmaps
-     * are recycled so their native pixel memory is freed immediately
-     * instead of waiting for the finalizer.
+     * while the cache exceeds its count or byte budget.
      */
     private static void putInCache(String url, Bitmap bmp) {
         synchronized (ImageLoader.class) {
@@ -435,9 +509,7 @@ public class ImageLoader {
     }
 
     /**
-     * Detaches a view and recycles its bitmap when no other owner needs it.
-     * Bitmaps still held by the shared cache are left alone because other
-     * views may display the same instance.
+     * Detaches a view and cancels any pending load for it.
      */
     public static void unbindImageView(ImageView imageView) {
         if (imageView == null) {
@@ -466,21 +538,24 @@ public class ImageLoader {
         }
         imageView.setTag(null);
         synchronized (ImageLoader.class) {
-            Enumeration<String> keys = pendingViews.keys();
+            Enumeration<String> keys = pendingTasks.keys();
             while (keys.hasMoreElements()) {
                 String key = keys.nextElement();
-                List<ImageRequest> list = pendingViews.get(key);
-                if (list == null) {
+                ImageTask task = pendingTasks.get(key);
+                if (task == null) {
                     continue;
                 }
-                for (int i = list.size() - 1; i >= 0; i--) {
-                    ImageView view = list.get(i).getView();
-                    if (view == null || view == imageView) {
-                        list.remove(i);
+                for (int i = task.requests.size() - 1; i >= 0; i--) {
+                    if (task.requests.get(i).isDeadOrMatches(imageView)) {
+                        task.requests.remove(i);
                     }
                 }
-                if (list.isEmpty()) {
-                    pendingViews.remove(key);
+                if (task.requests.isEmpty()) {
+                    task.cancelled = true;
+                    if (task.future != null) {
+                        task.future.cancel(true);
+                    }
+                    pendingTasks.remove(key);
                 }
             }
         }
@@ -507,7 +582,17 @@ public class ImageLoader {
      */
     public static void cancelAllLoads() {
         synchronized (ImageLoader.class) {
-            pendingViews.clear();
+            Enumeration<String> keys = pendingTasks.keys();
+            while (keys.hasMoreElements()) {
+                ImageTask task = pendingTasks.get(keys.nextElement());
+                if (task != null) {
+                    task.cancelled = true;
+                    if (task.future != null) {
+                        task.future.cancel(true);
+                    }
+                }
+            }
+            pendingTasks.clear();
         }
     }
 

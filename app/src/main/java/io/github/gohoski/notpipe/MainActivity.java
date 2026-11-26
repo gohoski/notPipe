@@ -1508,6 +1508,7 @@ public class MainActivity extends Activity implements InstancesUpdater.OnInstanc
         @Override
         protected void onPostExecute(SearchResult result) {
             if (isDestroyedFlag) return;
+            ImageLoader.cancelAllLoads();
             View loadingView = findViewById(R.id.loading);
             if (loadingView != null) loadingView.setVisibility(View.GONE);
             TextView emptyView = (TextView) findViewById(R.id.empty_videos);

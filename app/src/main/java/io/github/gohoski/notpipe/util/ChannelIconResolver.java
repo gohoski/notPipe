@@ -20,6 +20,8 @@ import io.github.gohoski.notpipe.api.Metadata;
 public class ChannelIconResolver {
     public static final String FAILED = "FAILED";
 
+    private static final int MAX_ATTEMPTS = 2;
+
     private static final Hashtable<String, String> resolvedChannelIcons = new Hashtable<String, String>();
     private static final Hashtable<String, Boolean> fetchingChannelIcons = new Hashtable<String, Boolean>();
     private static final ExecutorService channelIconExecutor = Executors.newFixedThreadPool(4);
@@ -87,6 +89,9 @@ public class ChannelIconResolver {
 
     /**
      * Requests a background fetch of the channel icon.
+     * Up to {@value #MAX_ATTEMPTS} attempts are made, each on a different API instance
+     * when one is available, so that a single slow or dead instance does not leave
+     * the icon unresolved.
      * If the icon is already resolved or being fetched, this is a no-op
      * and the listener is not invoked.
      * The listener is invoked on the main thread when the fetch completes.
@@ -105,13 +110,20 @@ public class ChannelIconResolver {
             @Override
             public void run() {
                 String fetchedUrl = null;
-                try {
-                    Metadata fallbackApi = Manager.getInstance().getRandomMetadata();
-                    if (fallbackApi != null) {
-                        fetchedUrl = fallbackApi.getChannelIcon(channelId);
+                Metadata lastApi = null;
+                for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+                    try {
+                        Metadata fallbackApi = Manager.getInstance().getRandomMetadata(lastApi);
+                        if (fallbackApi != null) {
+                            lastApi = fallbackApi;
+                            fetchedUrl = fallbackApi.getChannelIcon(channelId);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    if (fetchedUrl != null && fetchedUrl.length() > 0) {
+                        break;
+                    }
                 }
                 final String resultUrl = fetchedUrl;
                 new Handler(Looper.getMainLooper()).post(new Runnable() {

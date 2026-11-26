@@ -892,7 +892,7 @@ public class VideoActivity extends Activity {
                         arvv.setVideoDimensions(mp.getVideoWidth(), mp.getVideoHeight());
 
                         MediaController mc = new MediaController(context);
-                        mc.setAnchorView(videoFrame);
+                        //mc.setAnchorView(videoFrame);
                         videoView.setMediaController(mc);
 
                         if (isOpencore) {

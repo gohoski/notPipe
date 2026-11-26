@@ -275,15 +275,17 @@ public class HttpClient {
     public static void downloadToFile(String urlString, String outputPath, int timeout, DownloadProgressListener listener) throws IOException {
         HttpRequest request = new HttpRequest(urlString, "");
         InputStream in = null;
-        java.io.BufferedInputStream bin = null;
-        java.io.FileOutputStream out = null;
+        java.io.FileOutputStream fos = null;
+        java.io.BufferedOutputStream bout = null;
         java.io.File file = new java.io.File(outputPath);
         boolean success = false;
-        // 32 KB buffer matches standard FAT32 cluster sizes on SD cards, reducing I/O context switches
-        final int BUFFER_SIZE = 32768;
+
+        // Read in up to 16 KB chunks, collect them into a 64 KB memory buffer before writing to disk
+        final int READ_BUFFER_SIZE = 16384;
+        final int WRITE_BUFFER_SIZE = 65536;
+
         try {
             in = execute(request, timeout);
-            bin = new java.io.BufferedInputStream(in, BUFFER_SIZE);
             long totalBytes = -1;
             if (in instanceof ConnectionInputStream) {
                 totalBytes = ((ConnectionInputStream) in).getContentLength();
@@ -292,12 +294,16 @@ public class HttpClient {
             if (parent != null && !parent.exists()) {
                 parent.mkdirs();
             }
-            out = new java.io.FileOutputStream(file);
-            byte[] buffer = new byte[BUFFER_SIZE];
+
+            fos = new java.io.FileOutputStream(file);
+            bout = new java.io.BufferedOutputStream(fos, WRITE_BUFFER_SIZE);
+
+            byte[] buffer = new byte[READ_BUFFER_SIZE];
             int bytesRead;
             long bytesDownloaded = 0;
-            while ((bytesRead = bin.read(buffer, 0, BUFFER_SIZE)) != -1) {
-                out.write(buffer, 0, bytesRead);
+
+            while ((bytesRead = in.read(buffer, 0, READ_BUFFER_SIZE)) != -1) {
+                bout.write(buffer, 0, bytesRead);
                 bytesDownloaded += bytesRead;
                 if (listener != null) {
                     if (!listener.onProgress(bytesDownloaded, totalBytes)) {
@@ -305,21 +311,23 @@ public class HttpClient {
                     }
                 }
             }
-            out.flush();
-            // Sync file descriptors to ensure data is committed to SD card before returning
+
+            // Push any remaining bytes from the 64 KB Java buffer out to the file
+            bout.flush();
+            // Sync file descriptor to ensure data is committed to SD card before returning
             try {
-                out.getFD().sync();
+                fos.getFD().sync();
             } catch (Exception ignored) {}
 
             success = true;
         } finally {
-            if (bin != null) {
-                try { bin.close(); } catch (IOException ignored) {}
-            } else if (in != null) {
+            if (in != null) {
                 try { in.close(); } catch (IOException ignored) {}
             }
-            if (out != null) {
-                try { out.close(); } catch (IOException ignored) {}
+            if (bout != null) {
+                try { bout.close(); } catch (IOException ignored) {}
+            } else if (fos != null) {
+                try { fos.close(); } catch (IOException ignored) {}
             }
             if (!success && file.exists()) {
                 file.delete();

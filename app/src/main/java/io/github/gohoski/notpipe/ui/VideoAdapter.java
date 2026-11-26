@@ -108,20 +108,28 @@ public class VideoAdapter extends ArrayAdapter<VideoInfo> implements ChannelIcon
             }
         }
 
-        holder.video = video;
-        holder.imagesLoaded = false;
-        ImageLoader.cancelLoad(holder.videoThumb);
-        holder.videoThumb.setImageBitmap(null);
-        holder.videoThumb.setTag(video.thumbnail);
-        if (holder.channelThumb != null) {
-            ImageLoader.cancelLoad(holder.channelThumb);
-            holder.channelThumb.setImageBitmap(null);
+        boolean sameVideo = holder.video == video
+                || (holder.video != null && video.id != null && video.id.equals(holder.video.id));
+        boolean sameThumb = video.thumbnail != null
+                ? video.thumbnail.equals(holder.videoThumb.getTag())
+                : holder.videoThumb.getTag() == null;
+
+        if (!sameVideo || !sameThumb) {
+            holder.video = video;
+            holder.imagesLoaded = false;
+            ImageLoader.cancelLoad(holder.videoThumb);
+            holder.videoThumb.setImageBitmap(null);
+            holder.videoThumb.setTag(video.thumbnail);
+            if (holder.channelThumb != null) {
+                ImageLoader.cancelLoad(holder.channelThumb);
+                holder.channelThumb.setImageBitmap(null);
+            }
         }
 
         // If we are in MainActivity (standard ListView), load images immediately.
         // Recycled views are guarded by ImageView tags, so a late decode never
         // lands in the wrong row.
-        if (!isLazyLoading) {
+        if (!isLazyLoading && !holder.imagesLoaded) {
             ImageLoader.loadImage(video.thumbnail, holder.videoThumb);
             loadChannelIcon(holder);
             holder.imagesLoaded = true;

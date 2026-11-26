@@ -130,13 +130,32 @@ public class Manager {
 
     /**
      * Retrieves a single raw Metadata instance without a dynamic fallback proxy wrapper.
-     * Useful for optional single-attempt fallback operations (like channel icons).
+     * Useful for optional fallback operations (like channel icons).
      */
     public Metadata getRandomMetadata() {
         if (metadataInstances == null || metadataInstances.isEmpty()) {
             return null;
         }
         return metadataInstances.get(random.nextInt(metadataInstances.size()));
+    }
+
+    /**
+     * Retrieves a random Metadata instance, preferring one other than {@code exclude}.
+     * Used to retry an optional fallback operation (like channel icons) on a different instance.
+     * The given instance is used only when no alternative is available.
+     *
+     * @param exclude the instance to avoid, may be null
+     * @return a random Metadata instance, or null if none are configured
+     */
+    public Metadata getRandomMetadata(Metadata exclude) {
+        if (metadataInstances == null || metadataInstances.isEmpty()) {
+            return null;
+        }
+        List<Metadata> pool = new ArrayList<Metadata>(metadataInstances);
+        if (exclude != null && pool.size() > 1) {
+            pool.remove(exclude);
+        }
+        return pool.get(random.nextInt(pool.size()));
     }
 
     /**
