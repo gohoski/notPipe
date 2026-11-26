@@ -582,36 +582,6 @@ public class MainActivity extends Activity implements InstancesUpdater.OnInstanc
     }
 
     @Override
-    public boolean dispatchKeyEvent(KeyEvent event){
-        // TV Fallback: Force opening the overflow menu via key event because DPAD navigation gets stuck on UI views.
-        if(event != null && event.getAction() == KeyEvent.ACTION_DOWN){
-            int key = event.getKeyCode();
-            if(key == KeyEvent.KEYCODE_INFO || key == KeyEvent.KEYCODE_MENU){
-                showTvMenu();
-                return true;
-            }
-        }
-        return super.dispatchKeyEvent(event);
-    }
-    private void showTvMenu() {
-        View anchorView = findViewById(R.id.search_btn);
-        if (anchorView == null) {
-            anchorView = getWindow().getDecorView();
-        }
-        if (tvMenu == null) {
-            tvMenu = new PopupMenu(this, anchorView);
-            tvMenu.getMenuInflater().inflate(R.menu.menu_main, tvMenu.getMenu());
-            tvMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem item) {
-                    return onOptionsItemSelected(item);
-                }
-            });
-        }
-        tvMenu.show();
-    }
-
-    @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
             if (isSearchMode) {
